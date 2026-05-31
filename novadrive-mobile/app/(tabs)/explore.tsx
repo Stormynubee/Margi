@@ -1,7 +1,7 @@
 import { type Href, router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Alert, Animated, Easing, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { DashboardHeader } from '../../src/components/DashboardHeader';
@@ -26,10 +26,18 @@ const APP_VERSION = Constants.expoConfig?.version ?? '2.0.0';
  * Report Hazard, Daily Safety Brief.
  */
 export default function HomeTabScreen() {
-  const { profile, beginEmergencyFlow } = useApp();
+  const { profile, beginEmergencyFlow, resetDemoToStart } = useApp();
   const { enablePortal, dismissProtocol } = useNaariShakti();
   const [protocolVisible, setProtocolVisible] = useState(false);
   const showNaari = isNaariShaktiEligible(profile);
+
+  // Animated value for premium reload spin icon
+  const spinValue = useRef(new Animated.Value(0)).current;
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   const openNaari = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
@@ -78,9 +86,51 @@ export default function HomeTabScreen() {
               All sensors operational. GPS locked.
             </HudText>
           </View>
-          <HudText variant="mono" style={styles.version}>
-            V {APP_VERSION}
-          </HudText>
+          <View style={styles.bannerTrailing}>
+            <HudText variant="mono" style={styles.version}>
+              V {APP_VERSION}
+            </HudText>
+            <Pressable
+              style={({ pressed }) => [styles.resetBtn, pressed && styles.pressed]}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+                Alert.alert(
+                  "Reload from Start?",
+                  "This will clear all local settings, medical profile, and onboarding data, and restart the app from the splash screen.",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Reset & Restart",
+                      style: "destructive",
+                      onPress: async () => {
+                        // micro-spin animation on the icon
+                        spinValue.setValue(0);
+                        Animated.timing(spinValue, {
+                          toValue: 1,
+                          duration: 500,
+                          easing: Easing.bezier(0.4, 0, 0.2, 1),
+                          useNativeDriver: true,
+                        }).start(async () => {
+                          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+                          await resetDemoToStart();
+                          router.replace('/splash');
+                        });
+                      },
+                    },
+                  ]
+                );
+              }}
+              accessibilityRole="button"
+              accessibilityLabel="Reset Demo App State"
+            >
+              <Animated.View style={{ transform: [{ rotate: spin }] }}>
+                <MaterialIcons name="refresh" size={13} color={tokens.primary} />
+              </Animated.View>
+              <HudText variant="mono" style={styles.resetText}>
+                RESET DEMO
+              </HudText>
+            </Pressable>
+          </View>
         </View>
 
         <HomePrimaryStack
@@ -182,6 +232,27 @@ const styles = StyleSheet.create({
   statusTitle: { color: tokens.primary, fontFamily: 'PublicSans_700Bold' },
   statusSub: { color: tokens.onSurfaceVariant, marginTop: 2 },
   version: { fontSize: 11, color: tokens.onSurfaceVariant },
+  bannerTrailing: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  resetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: tokens.surfaceContainerHigh,
+    borderWidth: 1,
+    borderColor: tokens.outlineVariant,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: tokens.radius.button,
+  },
+  resetText: {
+    fontSize: 9,
+    fontFamily: 'PublicSans_700Bold',
+    color: tokens.primary,
+    letterSpacing: 0.5,
+  },
   fullTile: {
     width: '100%',
     backgroundColor: tokens.surface,

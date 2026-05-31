@@ -9,7 +9,7 @@ jest.mock('expo-secure-store', () => ({
   deleteItemAsync: jest.fn(),
 }));
 
-import { formatIceLine, normalizeMedical, defaultMedical } from './storage';
+import { formatIceLine, normalizeMedical, defaultMedical, resetDemoApp } from './storage';
 
 describe('normalizeMedical', () => {
   it('migrates legacy emergencyContact string into primaryContact', () => {
@@ -37,5 +37,17 @@ describe('formatIceLine', () => {
     expect(
       formatIceLine({ fullName: 'Sam', relationship: 'Sibling', phone: '555' })
     ).toBe('Sam · Sibling · 555');
+  });
+});
+
+describe('resetDemoApp', () => {
+  it('clears onboarded and profile keys from async storage and delete relay from secure store', async () => {
+    const AsyncStorage = require('@react-native-async-storage/async-storage');
+    const SecureStore = require('expo-secure-store');
+    
+    await resetDemoApp();
+    
+    expect(AsyncStorage.multiRemove).toHaveBeenCalledWith(['nd_onboarded', 'nd_profile']);
+    expect(SecureStore.deleteItemAsync).toHaveBeenCalledWith('nd_relay_packet');
   });
 });
