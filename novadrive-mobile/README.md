@@ -200,7 +200,7 @@ Design: [docs/superpowers/specs/2026-05-28-distress-voice-detection-design.md](d
 
 ```bash
 npm run typecheck
-npm test                 # 258 unit tests (79 suites)
+npm test                 # 274 unit tests (80 suites)
 npm run verify:docs      # README test count matches src/**/*.test.ts
 npm run verify:branding
 npm run test:coverage

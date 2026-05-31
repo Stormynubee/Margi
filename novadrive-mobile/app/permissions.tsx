@@ -4,8 +4,6 @@ import {
   Alert,
   Animated,
   Easing,
-  PermissionsAndroid,
-  Platform,
   Pressable,
   StyleSheet,
   View,
@@ -16,12 +14,15 @@ import { OnboardingShell } from '../src/components/OnboardingShell';
 import { HudText } from '../src/components/HudText';
 import { MargiButton } from '../src/components/MargiButton';
 import { setOnboarded } from '../src/lib/storage';
+import {
+  checkPermission,
+  requestPermission,
+  type PermKey,
+  type PermStatus,
+} from '../src/lib/permissions/permissionGateway';
 import { tokens } from '../src/theme/tokens';
 
 // ── Permission definitions ──────────────────────────────────────────────────
-
-type PermKey = 'sms' | 'call' | 'location' | 'notification';
-type PermStatus = 'idle' | 'granted' | 'denied' | 'requesting';
 
 interface PermissionDef {
   key: PermKey;
@@ -29,7 +30,6 @@ interface PermissionDef {
   title: string;
   subtitle: string;
   criticalFor: string;
-  androidPermission?: string;
   worksWithout: string;
 }
 
@@ -40,7 +40,6 @@ const PERMISSIONS: PermissionDef[] = [
     title: 'Send SMS',
     subtitle: 'Automatically send distress alerts to police & emergency contacts.',
     criticalFor: 'Naari Shakti · Crash Auto-Alert',
-    androidPermission: PermissionsAndroid.PERMISSIONS.SEND_SMS,
     worksWithout: 'Opens SMS composer — you tap send.',
   },
   {
@@ -49,7 +48,6 @@ const PERMISSIONS: PermissionDef[] = [
     title: 'Make Calls',
     subtitle: 'Place direct emergency calls in the background without you having to dial.',
     criticalFor: 'Crash Auto-Dispatch · SOS Call',
-    androidPermission: PermissionsAndroid.PERMISSIONS.CALL_PHONE,
     worksWithout: 'Opens dialer — you press call.',
   },
   {
@@ -58,7 +56,6 @@ const PERMISSIONS: PermissionDef[] = [
     title: 'Precise Location',
     subtitle: 'Required for crash detection, nearest police station, and live route tracking.',
     criticalFor: 'Drive Mode · Emergency Dispatch',
-    androidPermission: PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
     worksWithout: 'Core drive features are unavailable.',
   },
   {
@@ -67,10 +64,6 @@ const PERMISSIONS: PermissionDef[] = [
     title: 'Notifications',
     subtitle: 'Receive crash alerts, safety check-ins, and officer response confirmations.',
     criticalFor: 'All safety alerts',
-    androidPermission:
-      Platform.Version >= 33
-        ? PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
-        : undefined,
     worksWithout: 'Alerts only appear in-app.',
   },
 ];
@@ -93,14 +86,14 @@ function PermissionCard({
       const loop = Animated.loop(
         Animated.sequence([
           Animated.timing(pulseAnim, {
-            toValue: 0.5,
-            duration: 450,
+            toValue: 0.45,
+            duration: 420,
             easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
           Animated.timing(pulseAnim, {
             toValue: 1,
-            duration: 450,
+            duration: 420,
             easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
@@ -115,6 +108,7 @@ function PermissionCard({
 
   const isGranted = status === 'granted';
   const isDenied = status === 'denied';
+  const isRequesting = status === 'requesting';
 
   const iconBg = isGranted
     ? tokens.tertiaryContainer
@@ -132,6 +126,8 @@ function PermissionCard({
     ? 'check-circle'
     : isDenied
     ? 'cancel'
+    : isRequesting
+    ? 'hourglass-top'
     : 'radio-button-unchecked';
 
   const statusColor = isGranted
@@ -141,9 +137,9 @@ function PermissionCard({
     : tokens.outlineVariant;
 
   const borderColor = isGranted
-    ? `${tokens.tertiary}33`
+    ? `${tokens.tertiary}40`
     : isDenied
-    ? `${tokens.error}22`
+    ? `${tokens.error}25`
     : tokens.outlineVariant;
 
   return (
@@ -151,15 +147,18 @@ function PermissionCard({
       style={({ pressed }) => [
         styles.card,
         { borderColor },
-        pressed && !isGranted && styles.cardPressed,
+        pressed && !isGranted && !isRequesting && styles.cardPressed,
       ]}
-      onPress={isGranted ? undefined : onRequest}
-      disabled={isGranted || status === 'requesting'}
+      onPress={isGranted || isRequesting ? undefined : onRequest}
+      disabled={isGranted || isRequesting}
       accessibilityRole="button"
-      accessibilityLabel={`Request ${def.title} permission`}
+      accessibilityLabel={`${isGranted ? 'Granted' : 'Request'} ${def.title} permission`}
+      accessibilityState={{ disabled: isGranted || isRequesting }}
     >
-      {/* Icon + status dot */}
-      <Animated.View style={[styles.iconWrap, { backgroundColor: iconBg }, { opacity: pulseAnim }]}>
+      {/* Icon with pulse during request */}
+      <Animated.View
+        style={[styles.iconWrap, { backgroundColor: iconBg, opacity: pulseAnim }]}
+      >
         <MaterialIcons name={def.icon} size={22} color={iconColor} />
       </Animated.View>
 
@@ -185,6 +184,11 @@ function PermissionCard({
             Without: {def.worksWithout}
           </HudText>
         )}
+        {isRequesting && (
+          <HudText variant="mono" style={[styles.fallbackNote, { color: tokens.secondary }]}>
+            Waiting for system dialog…
+          </HudText>
+        )}
       </View>
     </Pressable>
   );
@@ -200,74 +204,86 @@ export default function PermissionsScreen() {
     notification: 'idle',
   });
 
-  const allGranted = Object.values(statuses).every((s) => s === 'granted');
-  const anyGranted = Object.values(statuses).some((s) => s === 'granted');
+  // Pre-check on mount — skip already-granted ones
+  useEffect(() => {
+    (async () => {
+      const results = await Promise.all(
+        PERMISSIONS.map(async (def) => ({
+          key: def.key,
+          status: await checkPermission(def.key),
+        }))
+      );
+      setStatuses((prev) => {
+        const next = { ...prev };
+        for (const { key, status } of results) {
+          next[key] = status;
+        }
+        return next;
+      });
+    })();
+  }, []);
 
-  const requestSingle = async (def: PermissionDef) => {
+  const allGranted = PERMISSIONS.every((d) => statuses[d.key] === 'granted');
+  const anyGranted = PERMISSIONS.some((d) => statuses[d.key] === 'granted');
+
+  // ── request a single permission (triggers OS system dialog) ──────────────
+
+  const requestSingle = async (key: PermKey) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
 
-    // iOS or no Android permission string → skip silently (treat as granted for flow)
-    if (Platform.OS !== 'android' || !def.androidPermission) {
-      setStatuses((prev) => ({ ...prev, [def.key]: 'granted' }));
-      return;
-    }
+    // Mark as requesting (shows pulse animation)
+    setStatuses((prev) => ({ ...prev, [key]: 'requesting' }));
 
-    setStatuses((prev) => ({ ...prev, [def.key]: 'requesting' }));
+    // Call the gateway — this triggers the REAL OS system dialog
+    const result = await requestPermission(key);
 
-    try {
-      const result = await PermissionsAndroid.request(def.androidPermission, {
-        title: `Margi — ${def.title}`,
-        message: def.subtitle,
-        buttonPositive: 'Allow',
-        buttonNegative: 'Skip',
-      });
+    setStatuses((prev) => ({ ...prev, [key]: result }));
 
-      const granted = result === PermissionsAndroid.RESULTS.GRANTED;
-      setStatuses((prev) => ({
-        ...prev,
-        [def.key]: granted ? 'granted' : 'denied',
-      }));
-
-      if (granted) {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
-          () => undefined
-        );
-      }
-    } catch {
-      setStatuses((prev) => ({ ...prev, [def.key]: 'denied' }));
+    if (result === 'granted') {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+        () => undefined
+      );
     }
   };
+
+  // ── Grant all: request each permission sequentially ─────────────────────
 
   const requestAll = async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
+
     for (const def of PERMISSIONS) {
-      if (statuses[def.key] !== 'granted') {
-        await requestSingle(def);
-        // Small delay between requests so the user sees each dialog
-        await new Promise((r) => setTimeout(r, 300));
-      }
+      // Skip if already decided
+      if (statuses[def.key] === 'granted' || statuses[def.key] === 'denied') continue;
+
+      await requestSingle(def.key);
+
+      // Brief pause between dialogs — helps Android render each one cleanly
+      await new Promise<void>((r) => setTimeout(r, 400));
     }
   };
+
+  // ── Finish onboarding ────────────────────────────────────────────────────
 
   const finish = async () => {
     await setOnboarded();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(
+      () => undefined
+    );
     router.replace('/(tabs)/explore' as Href);
   };
 
   const handleSkip = () => {
     Alert.alert(
       'Skip Permissions?',
-      'Emergency features will work in manual mode — you will tap to send SMS or call. You can grant permissions later in Settings.',
+      'Emergency features will work in manual mode — you will tap to send SMS or call.\n\nYou can grant permissions later in Settings → Permissions.',
       [
         { text: 'Go back', style: 'cancel' },
-        {
-          text: 'Skip for now',
-          style: 'default',
-          onPress: finish,
-        },
+        { text: 'Skip for now', style: 'default', onPress: finish },
       ]
     );
   };
+
+  // ── Render ───────────────────────────────────────────────────────────────
 
   return (
     <OnboardingShell
@@ -276,10 +292,10 @@ export default function PermissionsScreen() {
       title="Permissions"
       subtitle="Margi uses these permissions to automate emergency response. The app works without them — but acts faster with them."
     >
-      {/* Grant all shortcut */}
+      {/* Grant all shortcut — only visible while something is still undecided */}
       {!allGranted && (
         <Pressable
-          style={({ pressed }) => [styles.grantAllBtn, pressed && styles.cardPressed]}
+          style={({ pressed }) => [styles.grantAllBtn, pressed && styles.grantAllPressed]}
           onPress={requestAll}
           accessibilityRole="button"
           accessibilityLabel="Grant all permissions at once"
@@ -298,19 +314,31 @@ export default function PermissionsScreen() {
             key={def.key}
             def={def}
             status={statuses[def.key]}
-            onRequest={() => requestSingle(def)}
+            onRequest={() => requestSingle(def.key)}
           />
         ))}
       </View>
 
-      {/* Status summary */}
+      {/* Summary badge */}
       <View style={styles.summaryRow}>
         <MaterialIcons
-          name={allGranted ? 'verified-user' : anyGranted ? 'security' : 'info-outline'}
+          name={
+            allGranted
+              ? 'verified-user'
+              : anyGranted
+              ? 'security'
+              : 'info-outline'
+          }
           size={14}
           color={allGranted ? tokens.tertiary : tokens.onSurfaceVariant}
         />
-        <HudText variant="mono" style={[styles.summaryText, allGranted && { color: tokens.tertiary }]}>
+        <HudText
+          variant="mono"
+          style={[
+            styles.summaryText,
+            allGranted && { color: tokens.tertiary },
+          ]}
+        >
           {allGranted
             ? 'Full automation enabled — emergency dispatch is hands-free'
             : anyGranted
@@ -319,7 +347,7 @@ export default function PermissionsScreen() {
         </HudText>
       </View>
 
-      {/* Primary CTA */}
+      {/* CTA */}
       <MargiButton
         label={allGranted ? 'Enter Margi' : 'Continue'}
         onPress={finish}
@@ -327,9 +355,13 @@ export default function PermissionsScreen() {
         style={{ marginTop: 4 }}
       />
 
-      {/* Skip link */}
+      {/* Skip */}
       {!allGranted && (
-        <Pressable onPress={handleSkip} style={styles.skipBtn} accessibilityRole="button">
+        <Pressable
+          onPress={handleSkip}
+          style={styles.skipBtn}
+          accessibilityRole="button"
+        >
           <HudText variant="mono" style={styles.skipText}>
             Skip — I'll do this later
           </HudText>
@@ -339,7 +371,7 @@ export default function PermissionsScreen() {
   );
 }
 
-// ── Styles ───────────────────────────────────────────────────────────────────
+// ── Styles ────────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   grantAllBtn: {
@@ -349,18 +381,17 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: tokens.primary,
     borderRadius: tokens.radius.button,
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
     marginBottom: 4,
     ...tokens.elevation.floating,
   },
+  grantAllPressed: { opacity: 0.88 },
   grantAllText: {
     color: tokens.onPrimary,
     fontFamily: 'PublicSans_700Bold',
   },
-  grid: {
-    gap: 10,
-  },
+  grid: { gap: 10 },
   card: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -372,7 +403,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     ...tokens.elevation.card,
   },
-  cardPressed: { opacity: 0.88, transform: [{ scale: 0.99 }] },
+  cardPressed: { opacity: 0.87, transform: [{ scale: 0.99 }] },
   iconWrap: {
     width: 44,
     height: 44,
