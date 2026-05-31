@@ -30,6 +30,7 @@ Government-aligned, **offline-first Golden Hour research prototype** for Indian 
 | **Live brief site** | [roadsafetyhackathon-six.vercel.app](https://roadsafetyhackathon-six.vercel.app) |
 | **Complete UI brief** | [margi-complete.html](https://roadsafetyhackathon-six.vercel.app/margi-complete.html) |
 | **Official Demo & Docs Folder** | [Google Drive Folder](https://drive.google.com/drive/folders/15TaAJGIMtxYrN6eIPGyIJZqyhIHqSmjQ) (Contains final submission docx and video assets) |
+| **Official Demo Video** | [Watch App Demo Video](https://drive.google.com/file/d/10k0xtmzZXehshu93oddi1c_znsuy_eti/view?usp=sharing) (5-minute walkthrough for judges) |
 | **Deadline** | May 31, 2026, 11:59 PM IST |
 
 ---
