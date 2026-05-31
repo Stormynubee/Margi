@@ -66,6 +66,7 @@ export default function RootLayout() {
         <Stack.Screen name="auth" options={{ headerShown: false }} />
         <Stack.Screen name="medical" options={{ headerShown: false }} />
         <Stack.Screen name="accessibility" options={{ headerShown: false }} />
+        <Stack.Screen name="permissions" options={{ headerShown: false }} />
         <Stack.Screen name="home" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="trip" options={{ headerShown: false }} />

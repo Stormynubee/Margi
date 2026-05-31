@@ -10,7 +10,6 @@ import { OnboardingShell } from '../src/components/OnboardingShell';
 import { TextSizeSlider } from '../src/components/TextSizeSlider';
 import { useApp } from '../src/context/AppContext';
 import { announceA11y, speakA11y } from '../src/lib/a11yRuntime';
-import { setOnboarded } from '../src/lib/storage';
 import { useThemeTokens } from '../src/theme/useThemeTokens';
 import { tokens } from '../src/theme/tokens';
 
@@ -48,8 +47,8 @@ export default function AccessibilityScreen() {
 
   const finish = async () => {
     if (!inSettings) {
-      await setOnboarded();
-      router.replace('/(tabs)/explore' as Href);
+      // Route to the Permissions screen (step 4) — it calls setOnboarded on completion.
+      router.push('/permissions' as Href);
     } else {
       router.back();
     }
@@ -104,7 +103,7 @@ export default function AccessibilityScreen() {
     return (
       <OnboardingShell
         step={3}
-        total={3}
+        total={4}
         title="Accessibility"
         subtitle="Customize your Margi experience for safer, distraction-free navigation."
       >

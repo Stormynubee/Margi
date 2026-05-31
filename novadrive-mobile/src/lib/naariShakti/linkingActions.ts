@@ -1,32 +1,36 @@
-import * as Linking from 'expo-linking';
 import { Alert } from 'react-native';
 import type { UserProfile } from '../types';
 import { buildDistressSmsBody, buildLocationShareBody } from './messages';
 import { findNearestPoliceStation } from './stations';
 import { WOMENS_HELPLINE } from './helplines';
+import { executeSms, executeCall } from '../emergency/automationBroker';
 
+/**
+ * Sends an emergency SMS via the automationBroker.
+ * If SEND_SMS permission is granted → silent background dispatch.
+ * Otherwise → opens SMS composer for manual send.
+ */
 export async function openSmsUrl(phone: string, body: string): Promise<boolean> {
-  const url = `sms:${phone}?body=${encodeURIComponent(body)}`;
-  const ok = await Linking.canOpenURL(url);
+  const ok = await executeSms(phone, body);
   if (!ok) {
     Alert.alert(
       'SMS unavailable',
-      'Could not open the messaging app. Copy your location from Quick Help and send manually.'
+      'Could not send the message. Copy your location from Quick Help and send manually.'
     );
-    return false;
   }
-  await Linking.openURL(url);
-  return true;
+  return ok;
 }
 
+/**
+ * Dials an emergency helpline via the automationBroker.
+ * If CALL_PHONE permission is granted → direct background call.
+ * Otherwise → opens the native dialer.
+ */
 export async function dialHelpline(phone: string): Promise<void> {
-  const url = `tel:${phone}`;
-  const ok = await Linking.canOpenURL(url);
+  const ok = await executeCall(phone);
   if (!ok) {
     Alert.alert('Call unavailable', `Unable to dial ${phone} on this device.`);
-    return;
   }
-  await Linking.openURL(url);
 }
 
 export async function smsNearestStation(
@@ -68,6 +72,7 @@ export async function dialWomensHelpline(): Promise<void> {
 }
 
 export function openMapsNavigate(lat: number, lng: number): void {
+  const { Linking } = require('expo-linking');
   const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
   Linking.openURL(url).catch(() => {
     Alert.alert('Navigation unavailable', 'Could not open maps on this device.');
