@@ -79,6 +79,7 @@ Margi is a native Expo Android app (`com.margi.app`) that functions completely o
 | **Android Package Name** | `com.margi.app` |
 | **Automated Unit Tests** | **274 passed** · **80 suites** · **0 failures** (Run `npm test` in `novadrive-mobile/`) |
 | **Continuous Integration** | Automated test suite run in GitHub Actions on every commit/PR |
+| **Official Demo & Docs Folder** | [Google Drive Folder](https://drive.google.com/drive/folders/15TaAJGIMtxYrN6eIPGyIJZqyhIHqSmjQ) (Contains final submission docx and video assets) |
 | **Android Build CI** | [android-apk.yml](https://github.com/Stormynubee/Margi/actions/workflows/android-apk.yml) |
 
 ---
