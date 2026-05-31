@@ -14,7 +14,7 @@ This document is the **single source of truth** for what the repo actually ships
 | **Offline core** | START FSM → SQLite facility rank (~50 demo POIs) → GHP → QR (`ND1:` envelope) |
 | **Optional online** | Sarthi Gemini BFF (`novadrive/`), Supabase auth, HTTP dispatch hooks |
 | **Web mirror** | Bystander relay at `/relay`, static brief site at `docs/site` |
-| **Tests** | 252 passed Jest unit tests (78 suites) on FSM/routing/audio (see `novadrive-mobile/README.md`) |
+| **Tests** | 274 passed Jest unit tests (80 suites) on FSM/routing/audio (see `novadrive-mobile/README.md`) |
 | **Judge APK** | GitHub Actions → artifact `margi-debug.apk` ([workflow](https://github.com/Stormynubee/Margi/actions/workflows/android-apk.yml)) |
 
 ---
@@ -79,4 +79,4 @@ scripts/            ← optional OSM ingest (not bundled in app)
 
 Release tags (`v2.0.0-production`, etc.) mark **hackathon milestones**. They do not imply regulatory clearance, field validation, or operational deployment.
 
-**Last updated:** 2026-05-31 · **Tests:** 252 passed unit (mobile)
+**Last updated:** 2026-05-31 · **Tests:** 274 passed unit tests (80 suites)
