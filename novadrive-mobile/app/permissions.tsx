@@ -204,7 +204,17 @@ export default function PermissionsScreen() {
     notification: 'idle',
   });
 
-  // Pre-check on mount — skip already-granted ones
+  // Keep a ref that always has the latest statuses so requestAll never
+  // reads from a stale closure.
+  const statusRef = useRef<Record<PermKey, PermStatus>>({
+    sms: 'idle',
+    call: 'idle',
+    location: 'idle',
+    notification: 'idle',
+  });
+  const isRunningRef = useRef(false);
+
+  // Pre-check on mount — set any already-granted permissions to 'granted'
   useEffect(() => {
     (async () => {
       const results = await Promise.all(
@@ -218,6 +228,7 @@ export default function PermissionsScreen() {
         for (const { key, status } of results) {
           next[key] = status;
         }
+        statusRef.current = next;  // keep ref in sync
         return next;
       });
     })();
@@ -231,12 +242,15 @@ export default function PermissionsScreen() {
   const requestSingle = async (key: PermKey) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
 
-    // Mark as requesting (shows pulse animation)
+    // Mark as requesting (shows pulse animation) + update ref
+    statusRef.current = { ...statusRef.current, [key]: 'requesting' };
     setStatuses((prev) => ({ ...prev, [key]: 'requesting' }));
 
     // Call the gateway — this triggers the REAL OS system dialog
     const result = await requestPermission(key);
 
+    // Update ref first, then state
+    statusRef.current = { ...statusRef.current, [key]: result };
     setStatuses((prev) => ({ ...prev, [key]: result }));
 
     if (result === 'granted') {
@@ -244,22 +258,33 @@ export default function PermissionsScreen() {
         () => undefined
       );
     }
+
+    return result;
   };
 
   // ── Grant all: request each permission sequentially ─────────────────────
 
   const requestAll = async () => {
+    // Prevent double-execution if already running
+    if (isRunningRef.current) return;
+    isRunningRef.current = true;
+
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => undefined);
 
     for (const def of PERMISSIONS) {
-      // Skip if already decided
-      if (statuses[def.key] === 'granted' || statuses[def.key] === 'denied') continue;
+      // Read from REF (always current) — not from stale statuses closure
+      const current = statusRef.current[def.key];
+
+      // Skip if already decided — no point re-asking
+      if (current === 'granted' || current === 'denied' || current === 'requesting') continue;
 
       await requestSingle(def.key);
 
-      // Brief pause between dialogs — helps Android render each one cleanly
-      await new Promise<void>((r) => setTimeout(r, 400));
+      // Give Android time to dismiss the dialog before showing the next one
+      await new Promise<void>((r) => setTimeout(r, 700));
     }
+
+    isRunningRef.current = false;
   };
 
   // ── Finish onboarding ────────────────────────────────────────────────────
