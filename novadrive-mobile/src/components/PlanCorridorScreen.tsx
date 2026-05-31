@@ -154,7 +154,7 @@ function RouteCard({
  */
 export function PlanCorridorScreen() {
   const { height: windowH } = useWindowDimensions();
-  const mapHeight = Math.round(windowH * 0.37);
+  const mapHeight = Math.round(windowH * 0.28);
 
   const { journeyStatus, plannedDestination, setPlannedDestination } = useApp();
   const live = journeyStatus === 'ACTIVE';
@@ -213,33 +213,39 @@ export function PlanCorridorScreen() {
 
   useEffect(() => {
     if (gpsReady.current) return;
-    gpsReady.current = true;    (async () => {
-      try {
-        const { status } = await Location.requestForegroundPermissionsAsync();        if (status !== 'granted') {
-          setOrigin('Current location (permission needed)');
-          return;
-        }
-        const last = await Location.getLastKnownPositionAsync({ maxAge: 90_000 });
-        if (last?.coords) {
-          setOriginCoords({ lat: last.coords.latitude, lng: last.coords.longitude });
+    gpsReady.current = true;
+    const timer = setTimeout(() => {
+      (async () => {
+        try {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') {
+            setOrigin('Current location (permission needed)');
+            return;
+          }
+          const last = await Location.getLastKnownPositionAsync({ maxAge: 90_000 });
+          if (last?.coords) {
+            setOriginCoords({ lat: last.coords.latitude, lng: last.coords.longitude });
+            setOrigin(
+              toCurrentLocationLabel({
+                lat: last.coords.latitude,
+                lng: last.coords.longitude,
+              })
+            );
+          }
+          const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          setOriginCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
           setOrigin(
             toCurrentLocationLabel({
-              lat: last.coords.latitude,
-              lng: last.coords.longitude,
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
             })
           );
+        } catch {
+          setOrigin('Current location unavailable');
         }
-        const pos = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
-        setOriginCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-        setOrigin(
-          toCurrentLocationLabel({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          })
-        );
-      } catch {        setOrigin('Current location unavailable');
-      }
-    })();
+      })();
+    }, 150);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -409,13 +415,9 @@ export function PlanCorridorScreen() {
             </Pressable>
           </View>
         ) : (
-          <>
-            <ScrollView
-              style={styles.sheetScroll}
-              contentContainerStyle={styles.sheetScrollContent}
-              showsVerticalScrollIndicator={false}
-              keyboardShouldPersistTaps="handled"
-            >
+          <View style={styles.sheetContent}>
+            {/* Docked Header: Search Title and Input Fields */}
+            <View style={styles.fixedHeader}>
               <HudText variant="headlineLg" style={styles.sheetTitle}>
                 Plan Corridor
               </HudText>
@@ -428,66 +430,15 @@ export function PlanCorridorScreen() {
                 destination={destination}
                 onDestinationChange={handleDestinationChange}
               />
+            </View>
 
-              {showSuggestions && (
-                <View style={styles.suggestionsCard}>
-                  {searchingSuggestions ? (
-                    <View style={styles.suggestionsStatus}>
-                      <HudText variant="mono" style={styles.suggestionsStatusText}>SEARCHING REAL LOCATIONS…</HudText>
-                    </View>
-                  ) : suggestions.length === 0 ? (
-                    <View style={styles.suggestionsStatus}>
-                      <HudText variant="mono" style={styles.suggestionsStatusText}>NO REAL LOCATIONS FOUND</HudText>
-                    </View>
-                  ) : (
-                    suggestions.map((item, idx) => (
-                      <Pressable
-                        key={`${item.lat}_${item.lng}_${idx}`}
-                        onPress={() => {
-                          Haptics.selectionAsync().catch(() => undefined);
-                          setDestination(item.displayName);
-                          setOriginCoords(originCoords);
-                          setOsrmPolyline(null);
-                          setOsrmPathD(undefined);
-                          setOsrmOnline(false);
-                          setOsrmMetrics(null);
-                          setShowSuggestions(false);
-
-                          void (async () => {
-                            try {
-                              const route = await fetchDrivingRoute(originCoords, item);
-                              if (route) {
-                                setOsrmPolyline(route.coordinates);
-                                setOsrmPathD(
-                                  projectPolylineToViewBox(route.coordinates, MAP_VIEWBOX.w, MAP_VIEWBOX.h)
-                                );
-                                setOsrmOnline(true);
-                                setOsrmMetrics({
-                                  distanceKm: formatRouteDistanceKm(route.distanceM),
-                                  minutes: formatRouteMinutes(route.durationS),
-                                });
-                              }
-                            } catch (e) {
-                              Alert.alert('Routing failed', 'Could not plan a route along proper roads.');
-                            }
-                          })();
-                        }}
-                        style={({ pressed }) => [
-                          styles.suggestionRow,
-                          pressed && styles.suggestionPressed,
-                          idx < suggestions.length - 1 && styles.suggestionBorder,
-                        ]}
-                      >
-                        <MaterialIcons name="location-on" size={16} color={tokens.secondary} style={{ marginRight: 8, marginTop: 2 }} />
-                        <HudText variant="bodySm" style={styles.suggestionText} numberOfLines={2}>
-                          {item.displayName}
-                        </HudText>
-                      </Pressable>
-                    ))
-                  )}
-                </View>
-              )}
-
+            {/* Scrollable Body: Route Lists, AI Safety, & Briefing */}
+            <ScrollView
+              style={styles.sheetScroll}
+              contentContainerStyle={styles.sheetScrollContent}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
               <View style={styles.prefRow}>
                 <Pressable
                   onPress={() => onPreference('safest')}
@@ -649,22 +600,83 @@ export function PlanCorridorScreen() {
                 </HudText>
                 <MaterialIcons name="chevron-right" size={20} color={tokens.outline} />
               </Pressable>
-
-              <View style={styles.footerInline}>
-                <Pressable
-                  onPress={startDriving}
-                  style={({ pressed }) => [styles.startBtn, pressed && styles.startPressed]}
-                  accessibilityRole="button"
-                  accessibilityLabel="Start driving"
-                >
-                  <MaterialIcons name="directions-car" size={22} color={tokens.onPrimary} />
-                  <HudText variant="bodyMd" style={styles.startLabel}>
-                    Start Driving
-                  </HudText>
-                </Pressable>
-              </View>
             </ScrollView>
-          </>
+
+            {/* Suggestions Rendered Absolutely directly below destination inputs */}
+            {showSuggestions && (
+              <View style={styles.suggestionsCard}>
+                {searchingSuggestions ? (
+                  <View style={styles.suggestionsStatus}>
+                    <HudText variant="mono" style={styles.suggestionsStatusText}>SEARCHING REAL LOCATIONS…</HudText>
+                  </View>
+                ) : suggestions.length === 0 ? (
+                  <View style={styles.suggestionsStatus}>
+                    <HudText variant="mono" style={styles.suggestionsStatusText}>NO REAL LOCATIONS FOUND</HudText>
+                  </View>
+                ) : (
+                  suggestions.map((item, idx) => (
+                    <Pressable
+                      key={`${item.lat}_${item.lng}_${idx}`}
+                      onPress={() => {
+                        Haptics.selectionAsync().catch(() => undefined);
+                        setDestination(item.displayName);
+                        setOriginCoords(originCoords);
+                        setOsrmPolyline(null);
+                        setOsrmPathD(undefined);
+                        setOsrmOnline(false);
+                        setOsrmMetrics(null);
+                        setShowSuggestions(false);
+
+                        void (async () => {
+                          try {
+                            const route = await fetchDrivingRoute(originCoords, item);
+                            if (route) {
+                              setOsrmPolyline(route.coordinates);
+                              setOsrmPathD(
+                                projectPolylineToViewBox(route.coordinates, MAP_VIEWBOX.w, MAP_VIEWBOX.h)
+                              );
+                              setOsrmOnline(true);
+                              setOsrmMetrics({
+                                distanceKm: formatRouteDistanceKm(route.distanceM),
+                                minutes: formatRouteMinutes(route.durationS),
+                              });
+                            }
+                          } catch (e) {
+                            Alert.alert('Routing failed', 'Could not plan a route along proper roads.');
+                          }
+                        })();
+                      }}
+                      style={({ pressed }) => [
+                        styles.suggestionRow,
+                        pressed && styles.suggestionPressed,
+                        idx < suggestions.length - 1 && styles.suggestionBorder,
+                      ]}
+                    >
+                      <MaterialIcons name="location-on" size={16} color={tokens.secondary} style={{ marginRight: 8, marginTop: 2 }} />
+                      <HudText variant="bodySm" style={styles.suggestionText} numberOfLines={2}>
+                        {item.displayName}
+                      </HudText>
+                    </Pressable>
+                  ))
+                )}
+              </View>
+            )}
+
+            {/* Docked Fixed Footer CTA: Always in 1 Screen without scrolling */}
+            <View style={styles.fixedFooter}>
+              <Pressable
+                onPress={startDriving}
+                style={({ pressed }) => [styles.startBtn, pressed && styles.startPressed]}
+                accessibilityRole="button"
+                accessibilityLabel="Start driving"
+              >
+                <MaterialIcons name="directions-car" size={22} color={tokens.onPrimary} />
+                <HudText variant="bodyMd" style={styles.startLabel}>
+                  Start Driving
+                </HudText>
+              </Pressable>
+            </View>
+          </View>
         )}
       </KeyboardAvoidingView>
     </View>
@@ -713,7 +725,7 @@ const styles = StyleSheet.create({
   sheetScroll: { flex: 1 },
   sheetScrollContent: {
     paddingHorizontal: tokens.spacing.sideMargin,
-    paddingBottom: 130, // plenty of space to scroll button clear of the tabbar!
+    paddingBottom: 24, // compact padding since CTA is fixed docked!
     flexGrow: 1,
   },
   sheetTitle: {
@@ -727,6 +739,24 @@ const styles = StyleSheet.create({
     color: tokens.onSurfaceVariant,
     marginTop: 4,
     marginBottom: tokens.spacing.stackMd,
+  },
+  sheetContent: {
+    flex: 1,
+  },
+  fixedHeader: {
+    paddingHorizontal: tokens.spacing.sideMargin,
+    backgroundColor: tokens.surface,
+    zIndex: 10,
+    paddingBottom: 4,
+  },
+  fixedFooter: {
+    paddingHorizontal: tokens.spacing.sideMargin,
+    paddingTop: 12,
+    paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+    borderTopWidth: 1,
+    borderTopColor: tokens.outlineVariant,
+    backgroundColor: tokens.surface,
+    zIndex: 10,
   },
   prefRow: {
     flexDirection: 'row',
@@ -796,12 +826,15 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   suggestionsCard: {
+    position: 'absolute',
+    left: tokens.spacing.sideMargin,
+    right: tokens.spacing.sideMargin,
+    top: 205, // Positioned absolute overlay directly under search inputs card
     backgroundColor: tokens.surface,
     borderWidth: 1.5,
     borderColor: tokens.outlineVariant,
     borderRadius: tokens.radius.card,
-    marginTop: -8,
-    marginBottom: tokens.spacing.stackMd,
+    zIndex: 9999,
     overflow: 'hidden',
     ...tokens.elevation.floating,
   },

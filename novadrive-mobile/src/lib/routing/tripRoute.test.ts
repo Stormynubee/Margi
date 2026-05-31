@@ -1,3 +1,14 @@
+jest.mock('expo-sqlite', () => {
+  return {
+    openDatabaseAsync: jest.fn(async () => ({
+      execAsync: jest.fn(),
+      runAsync: jest.fn(),
+      getFirstAsync: jest.fn(async () => ({ c: 0 })),
+      getAllAsync: jest.fn(async () => []),
+    })),
+  };
+});
+
 import { projectPolylineToViewBox } from './tripRoute';
 
 describe('tripRoute', () => {

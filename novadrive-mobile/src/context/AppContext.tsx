@@ -472,17 +472,23 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     journeyMaxSpeed.current = 0;
     impactAlertCount.current = 0;
     voiceAlertCount.current = 0;
-    try {
-      journeyLogId.current = await createJourneyLog(
-        plannedDestination || 'Corridor A → B'
-      );
-    } catch {
-      journeyLogId.current = null;
-    }
-    await ensureSafetyMonitoring();
-    if (shouldEnableVoiceMonitoring(settingsRef.current)) {
-      setVoiceMonitoring(true);
-    }
+
+    // Defer heavy database queries and coordinate watch registrations
+    // to run 150ms later, letting page transitions and mount animations settle perfectly at 60 FPS.
+    setTimeout(async () => {
+      if (journeyStatusRef.current !== 'ACTIVE') return;
+      try {
+        journeyLogId.current = await createJourneyLog(
+          plannedDestination || 'Corridor A → B'
+        );
+      } catch {
+        journeyLogId.current = null;
+      }
+      await ensureSafetyMonitoring();
+      if (shouldEnableVoiceMonitoring(settingsRef.current)) {
+        setVoiceMonitoring(true);
+      }
+    }, 150);
   }, [ensureSafetyMonitoring, plannedDestination]);
 
   const stopSensors = useCallback(async () => {

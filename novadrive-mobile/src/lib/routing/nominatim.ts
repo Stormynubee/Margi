@@ -13,6 +13,10 @@ export type GeocodeSuggestion = {
 const NOMINATIM_BASE = 'https://nominatim.openstreetmap.org';
 const USER_AGENT = 'Margi/2.0 (roadsafetyhackathon; demo routing)';
 
+import { searchOfflineLocations } from './geocodingDb';
+
+export const STATIC_OFFLINE_LOCATIONS: GeocodeSuggestion[] = [];
+
 export async function fetchLocationSuggestions(
   query: string,
   fetchImpl: typeof fetch = fetch
@@ -24,16 +28,22 @@ export async function fetchLocationSuggestions(
     const res = await fetchImpl(url, {
       headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
     });
-    if (!res.ok) return [];
-    const rows = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
-    return rows.map((hit) => ({
-      lat: Number(hit.lat),
-      lng: Number(hit.lon),
-      displayName: hit.display_name,
-    }));
+    if (res.ok) {
+      const rows = (await res.json()) as Array<{ lat: string; lon: string; display_name: string }>;
+      if (rows && rows.length > 0) {
+        return rows.map((hit) => ({
+          lat: Number(hit.lat),
+          lng: Number(hit.lon),
+          displayName: hit.display_name,
+        }));
+      }
+    }
   } catch {
-    return [];
+    // Gracefully catch and move to offline fallback search
   }
+
+  // ── Offline SQLite Geocoding Database ─────────────────────────────────────
+  return await searchOfflineLocations(trimmed);
 }
 
 export async function geocodePlace(
