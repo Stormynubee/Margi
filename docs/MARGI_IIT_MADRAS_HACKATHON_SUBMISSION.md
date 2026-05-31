@@ -6,62 +6,62 @@
 **Event:** CoERS & RBG Labs / MoRTH National Road Safety Hackathon 2026, IIT Madras  
 **Submission Date:** May 31, 2026  
 **Product Name:** Margi (Sanskrit for "The Guide" or "The Path Finder")  
-**Tagline:** *When signal drops, the path still holds. The network failed — the golden hour didn't.*
+**Tagline:** *When signal drops, the path still holds. The network failed, but the golden hour didn't.*
 
 ---
 
-## 1. Executive Pitch: The Human Mission of Margi
+## 1. Why I Built Margi: A Personal Mission
 
-India records over **1.7 lakh road fatalities every single year**—one of the highest rates in the world. Behind this statistic lies a brutal reality: thousands of these victims could have survived if they had received basic triage and been directed to the right level of trauma care within the **Golden Hour** (the first 60 minutes after impact). On Indian national highway corridors, three critical compounding problems turn minor collisions into fatal tragedies:
+India records over **1.7 lakh road deaths every year**—one of the worst rates in the world. Behind this massive number is a simple, painful truth: thousands of these people could have lived if they had received basic first-aid triage and been routed to the correct level of trauma care within the **Golden Hour** (the first 60 minutes after a crash). On Indian highway corridors, three main problems turn minor accidents into fatalities:
 
-1. **Highway Dead Zones:** Remote stretches of National Highways (like NH-48 or state routes through Odisha) suffer from severe GSM/network blackouts. Traditional cloud-based SOS apps completely freeze when signal drops, leaving victims isolated.
-2. **Bystander Paralysis:** A bystander who stops to help is often paralyzed by panic. Without medical training, they do not know how to check if a victim is breathing, whether their pulse is stable, or what immediate actions to take.
-3. **Dispatch & Routing Friction:** When bystanders finally get through to 108/112 operators, they cannot describe the victim's precise coordinates or triage status. Furthermore, they often transport victims to basic clinics instead of Tier-1 trauma centers, wasting precious time.
+1. **Highway Dead Zones:** Remote stretches of National Highways (like NH-48 or state routes through Odisha) suffer from severe cellular blackouts. Cloud-based emergency apps simply freeze when the network drops, leaving victims completely isolated.
+2. **Bystander Panic:** A bystander who stops to help is often paralyzed by fear. Without medical training, they do not know what to assess, whether a victim is breathing normally, or what steps to take.
+3. **Dispatch & Routing Gaps:** When bystanders manage to reach 108 or 112 operators, they are rarely able to give precise coordinates or triage details. Even worse, they often transport critically injured victims to basic clinics instead of Level-1 trauma centers, wasting the final minutes of the Golden Hour.
 
-### The Moral Choice of Client-Heavy, Offline-First Code
+### Why Offline-First is the Only Option
 
-**Margi was born out of a refusal to accept these gaps.** Built with intense technical discipline and real-world empathy by self-taught 17-year-old system architect and full-stack engineer Hansraj Tiwari (Team NovaDrive). Drawing on 9+ years of self-taught engineering since age 8 in Kalahandi, Odisha—where remote medical infrastructure and highway network dead zones are a daily, painful reality—Margi was designed from the ground up to solve the bystander paralysis and GSM blackout gaps that cost thousands of lives during the Golden Hour.
+I decided early on that a standard web app or API-reliant client wouldn't cut it. In real emergencies on remote highways, servers are useless. That's why every triage decision, hospital ranking, and emergency packet is assembled strictly on the device.
 
-We made a moral engineering choice: **every critical emergency decision must happen entirely on-device, with zero network required.** 
+I'm Hansraj Tiwari, a 17-year-old self-taught developer from Kalahandi, Odisha. Living in an area where network dead zones and limited medical infrastructure are everyday issues, I wanted to build something that actually works when cells go dead. I've spent over 200 hours coding this app to make sure that a bystander doesn't freeze in panic during the Golden Hour, even in absolute airplane mode.
 
-Margi is a high-craft, client-heavy **native Expo Android app** (`com.margi.app`) that functions perfectly in absolute airplane mode. If an accident happens in a dead zone:
-* The app guides a bystander through a deterministic **START triage finite state machine (FSM)**.
-* It ranks the nearest verified trauma-tier facilities from a local **SQLite database** seeded via OpenStreetMap.
-* It packages the coordinates, triage color, and emergency contacts into an ultra-compressed **Golden Hour Packet (GHP)**.
-* It renders this packet as a high-density offline **bystander QR code**.
-* When any passerby with a working network connection scans this QR, their browser decodes the data and pre-fills an SMS to 108 instantly. **The network failed on the victim's phone, but the Golden Hour did not.**
+Margi is a native Expo Android app (`com.margi.app`) that functions completely offline. If an accident happens in a network blackout:
+* The app guides a bystander through an interactive **START triage finite state machine (FSM)**.
+* It ranks the nearest verified trauma-tier facilities from a local **SQLite database** seeded via OpenStreetMap Overpass queries.
+* It bundles the location, triage tag, and emergency contacts into an ultra-compressed **Golden Hour Packet (GHP)**.
+* It displays this packet as a high-density **bystander QR code**.
+* When any passerby with a working network connection scans this QR, their browser decodes the data and pre-fills an SMS to 108 instantly. The network failed on the victim's phone, but the Golden Hour did not.
 
 ---
 
 ## 2. Table of Contents
 
 1. [Quick Reference & Codebase Statistics](#3-quick-reference--codebase-statistics)
-2. [Solution Overview — What Margi Is](#4-solution-overview--what-margi-is)
+2. [Solution Architecture: How Margi Works](#4-solution-architecture-how-margi-works)
 3. [The Two Safety Lanes (Lane A & Lane B)](#5-the-two-safety-lanes-lane-a--lane-b)
-4. [Granular System Architecture](#6-granular-system-architecture)
+4. [System Architecture & Data Flow](#6-system-architecture--data-flow)
 5. [Comprehensive Technology Stack](#7-comprehensive-technology-stack)
-6. [Core Features in Deep Detail](#8-core-features-in-deep-detail)
-7. [The START Triage Finite State Machine](#9-the-start-triage-finite-state-machine)
-8. [The SQLite Facility Database & Smart Trauma Tier Routing](#10-the-sqlite-facility-database--smart-trauma-tier-routing)
-9. [The Golden Hour Packet (GHP) Compression & QR Mechanics](#11-the-golden-hour-packet-ghp-compression--qr-mechanics)
-10. [Bystander QR Relay System (Web Architecture)](#12-bystander-qr-relay-system-web-architecture)
-11. [The Crash Detection Heuristics Engine](#13-the-crash-detection-heuristics-engine)
-12. [Distress Voice Classifier & Spectral Filter Bounds](#14-distress-voice-classifier--spectral-filter-bounds)
-13. [Naari Shakti — Saffron-Navy Women's Safety Portal](#15-naari-shakti--saffron-navy-womens-safety-portal)
-14. [Sarthi AI Assistant — Offline KB + Gemini BFF Cloud Integration](#16-sarthi-ai-assistant--offline-kb--gemini-bff-cloud-integration)
-15. [Dynamic Permission System Overhaul (Latest Codebase Breakthrough)](#17-dynamic-permission-system-overhaul-latest-codebase-breakthrough)
-16. [Multilingual Translation Architecture (15-Language Core)](#18-multilingual-translation-architecture-15-language-core)
+6. [Core Subsystems & Offline Debouncing](#8-core-subsystems--offline-debouncing)
+7. [The START Triage Engine](#9-the-start-triage-engine)
+8. [Offline Hospital Routing & Local SQLite DB](#10-offline-hospital-routing--local-sqlite-db)
+9. [Golden Hour Packet (GHP) & QR Encoding](#11-golden-hour-packet-ghp--qr-encoding)
+10. [Bystander Web Relay Subsystem](#12-bystander-web-relay-subsystem)
+11. [Physical Crash Detection (Experimental)](#13-physical-crash-detection-experimental)
+12. [Ephemeral Voice Distress Classifier](#14-ephemeral-voice-distress-classifier)
+13. [Naari Shakti: Saffron-Navy Women's Safety Lane](#15-naari-shakti-saffron-navy-womens-safety-lane)
+14. [Sarthi: Dual-Mode AI Assistant](#16-sarthi-dual-mode-ai-assistant)
+15. [Android Permission Engineering & Refactoring](#17-android-permission-engineering--refactoring)
+16. [Multilingual Translation Core (15-Language Registry)](#18-multilingual-translation-core-15-language-registry)
 17. [Accessibility Foundations & Semantic Layouts](#19-accessibility-foundations--semantic-layouts)
-18. [Screen Map: Every View in the App](#20-screen-map-every-view-in-the-app)
-19. [Repository Directory Blueprint](#21-repository-directory-blueprint)
-20. [Testing Discipline: 274 passed unit tests under TDD](#22-testing-discipline-274-passed-unit-tests-under-tdd)
-21. [Build & Installation Guide (Source & Binary)](#23-build--installation-guide-source--binary)
+18. [Screen Navigation Hierarchy](#20-screen-navigation-hierarchy)
+19. [Repository Directory Tree](#21-repository-directory-tree)
+20. [Test Suite & TDD Validation (274 Unit Tests)](#22-test-suite--tdd-validation-274-unit-tests)
+21. [Build & Installation Guide](#23-build--installation-guide)
 22. [Five Guided Demo Paths for Judges](#24-five-guided-demo-paths-for-judges)
 23. [Cloud Infrastructure, Supabase Schema & BFF Deployment](#25-cloud-infrastructure-supabase-schema--bff-deployment)
 24. [Offline vs. Online Capabilities Comparison Matrix](#26-offline-vs-online-capabilities-comparison-matrix)
-25. [Milestones & Version History Log](#27-milestones-version-history-log)
-26. [Honesty Boundaries (Claims vs. Demo Realities)](#28-honesty-boundaries-claims-vs-demo-realities)
-27. [The 8 Major Engineering Problems & Solutions Log](#29-the-8-major-engineering-problems--solutions-log)
+25. [Development Version History](#27-development-version-history)
+26. [Scope & Demo Limitations](#28-scope-&-demo-limitations)
+27. [Engineering Log: Real-World Bug Solving](#29-engineering-log-real-world-bug-solving)
 28. [Technical Glossary](#30-technical-glossary)
 29. [Team, Resources, and In-Repo Document Map](#31-team-resources-and-in-repo-document-map)
 
@@ -69,7 +69,7 @@ Margi is a high-craft, client-heavy **native Expo Android app** (`com.margi.app`
 
 ## 3. Quick Reference & Codebase Statistics
 
-| Metric / Resource | Current Value / Path |
+| Metric / Resource | Value / Local Path |
 |:---|:---|
 | **GitHub Repository** | [Stormynubee/Margi](https://github.com/Stormynubee/Margi) |
 | **Release Tag / APK** | [`v2.0.0-production`](https://github.com/Stormynubee/Margi/releases/tag/v2.0.0-production) ➔ `margi-debug.apk` |
@@ -77,15 +77,15 @@ Margi is a high-craft, client-heavy **native Expo Android app** (`com.margi.app`
 | **Sarthi AI BFF (Vercel)**| [novadrive-eta.vercel.app](https://novadrive-eta.vercel.app) (Gemini BFF Endpoint) |
 | **Bystander Web Relay** | [novadrive-eta.vercel.app/relay](https://novadrive-eta.vercel.app/relay) (QR Decoder) |
 | **Android Package Name** | `com.margi.app` |
-| **Rigorous Unit Tests** | **274 passed** · **80 suites** · **0 failures** (Run `npm test` inside `novadrive-mobile/`) |
+| **Automated Unit Tests** | **274 passed** · **80 suites** · **0 failures** (Run `npm test` in `novadrive-mobile/`) |
 | **Continuous Integration** | Automated test suite run in GitHub Actions on every commit/PR |
 | **Android Build CI** | [android-apk.yml](https://github.com/Stormynubee/Margi/actions/workflows/android-apk.yml) |
 
 ---
 
-## 4. Solution Overview — What Margi Is
+## 4. Solution Architecture: How Margi Works
 
-Margi is a **native React Native client app** wrapped in Expo SDK 54, running entirely on-device to bypass network blackouts. It provides:
+Margi is a native React Native client app wrapped in Expo SDK 54, running entirely on-device to bypass network blackouts. It provides:
 1. **Deterministic START Triage:** An interactive FSM chat that maps answers directly to standard triage colors (`RED`, `YELLOW`, `GREEN`, `BLACK`) following international trauma standards.
 2. **Offline Trauma Facility Database:** An embedded SQLite database containing pre-parsed, tier-ranked emergency locations (Level 1 Trauma Centers, General ERs, local clinics).
 3. **Structured SMS and QR Packet Assemblies:** LZ-compressed string packs that bundle patient vital signs, GPS coordinates, local timestamps, and emergency contact lists into a single payload.
@@ -125,7 +125,7 @@ A dedicated, high-contrast Saffron and Saffron-Navy lane that activates when the
 
 ---
 
-## 6. Granular System Architecture
+## 6. System Architecture & Data Flow
 
 Margi is a client-centric system where the on-device engine does 100% of the heavy lifting. The cloud is treated as an optional booster:
 
@@ -160,7 +160,7 @@ graph TD
 
 ## 7. Comprehensive Technology Stack
 
-Margi is built on a modern, highly optimized stack selected specifically for rapid compilation, reliable native bridge access, and native performance:
+Margi is built on a modern stack selected specifically for rapid compilation, reliable native bridge access, and native performance:
 
 ### Mobile Native App (`novadrive-mobile/` · v2.0.0-production)
 * **Framework:** React Native + Expo SDK 54 (`~54.0.0`), React `19.1.0`, React Native `0.81.5`.
@@ -177,7 +177,7 @@ Margi is built on a modern, highly optimized stack selected specifically for rap
 
 ---
 
-## 8. Core Features in Deep Detail
+## 8. Core Subsystems & Offline Debouncing
 
 ### 8.1 Offline Emergency Activation & Grace Controls
 * **Debounced Hold-SOS:** Built a custom animated circular progress ring using React Native `Animated` APIs. The user must hold the button down for `3000ms`.
@@ -190,7 +190,7 @@ Margi is built on a modern, highly optimized stack selected specifically for rap
 
 ---
 
-## 9. The START Triage Finite State Machine
+## 9. The START Triage Engine
 
 The **Simple Triage and Rapid Treatment (START)** protocol is the international standard for mass-casualty triage. Margi implements this as a fully deterministic **Finite State Machine (FSM)**.
 
@@ -268,7 +268,7 @@ export function applyAnswer(
 
 ---
 
-## 10. The SQLite Facility Database & Smart Trauma Tier Routing
+## 10. Offline Hospital Routing & Local SQLite DB
 
 ### Embedded SQLite & Overpass API Pipeline
 We built a custom Python build pipeline (`scripts/osm_poi_ingest.py`) that queries the OpenStreetMap Overpass API for a bounded box enclosing the **NH-48 Chennai-Bengaluru highway corridor** (our primary demonstration seed). It filters for:
@@ -293,7 +293,7 @@ Where $r = 6371\text{ km}$ (Earth's radius), $\phi$ represents latitude, and $\l
 
 ---
 
-## 11. The Golden Hour Packet (GHP) Compression & QR Mechanics
+## 11. Golden Hour Packet (GHP) & QR Encoding
 
 When signal drops, the victim's phone cannot connect to a web server. However, we can pack all critical accident data into a single string, compress it, and present it to any bystander as a QR code.
 
@@ -312,7 +312,7 @@ Using raw JSON in QR codes produces massive, complex visual patterns that are in
 
 ---
 
-## 12. Bystander QR Relay System (Web Architecture)
+## 12. Bystander Web Relay Subsystem
 
 What happens when a bystander scans the GHP QR code on the highway?
 
@@ -346,7 +346,7 @@ This elegant loop bypasses the network blackout of the victim's device completel
 
 ---
 
-## 13. The Crash Detection Heuristics Engine
+## 13. Physical Crash Detection (Experimental)
 
 Margi does not claim to hold regulatory clearance as an automatic, certifiable vehicle crash responder. Instead, we have engineered a robust, double-gated **Heuristic Crash Detection Engine** designed to act as an experimental safety co-pilot.
 
@@ -365,7 +365,7 @@ We implemented calibrated sensitivity margins that map to physical G-forces:
 
 ---
 
-## 14. Distress Voice Classifier & Spectral Filter Bounds
+## 14. Ephemeral Voice Distress Classifier
 
 If a crash is suspected but the G-force is borderline, Margi activates its **Distress Voice Classifier** to analyze ambient cabin audio before raising a false alarm.
 
@@ -384,19 +384,19 @@ The classifier was validated in our test suite using 50 recorded distress clips 
 
 ---
 
-## 15. Naari Shakti — Saffron-Navy Women's Safety Portal
+## 15. Naari Shakti: Saffron-Navy Women's Safety Lane
 
-The **Naari Shakti** portal is a specialized emergency lane designed to combat gender-based violence and distress. It features a stunning, high-craft **Saffron and Navy Blue color palette**, completely separating it from the primary emergency console to ensure immediate visual distinction during a panic event.
+The **Naari Shakti** portal is a specialized emergency lane designed to combat gender-based violence and distress. It features a Saffron and Navy Blue color palette, completely separating it from the primary emergency console to ensure immediate visual distinction during a panic event.
 
 ### Safety Protocol Workflow
 * **Hold-to-Activate:** A 2-second hold on the **Emergency Help** trigger activates the distress portal.
 * **Immediate SMS Dispatch:** Instantly generates a preconfigured distress SMS populated with the user's current GPS location and local time, targeting preconfigured ICE contacts and the nearest regional police station.
-* **Helpline Hotkeys:** Direct, highly visible links to dial **181** (the National Commission for Women helpline) and **112** (unified emergency dispatch).
-* **Automatic Offline Recording:** ephemerally activates the native microphone to log 10-second rolling audio clips stored safely in `expo-secure-store`. This provides legal and physical evidence of the event, accessible only to the device owner.
+* **Helpline Hotkeys:** Direct, highly visible links to dial **181** (the National Commission for Women helpline) and **112** (unified emergency fallback).
+* **Automatic Offline Recording:** Ephemerally activates the native microphone to log 10-second rolling audio clips stored safely in `expo-secure-store`. This provides physical evidence of the event, accessible only to the device owner.
 
 ---
 
-## 16. Sarthi AI Assistant — Offline KB + Gemini BFF Cloud Integration
+## 16. Sarthi: Dual-Mode AI Assistant
 
 ### Sarthi Offline Knowledge Base
 When network connectivity is completely absent, Sarthi acts as an on-device first-aid and safety encyclopedia. It matches user queries against a local database containing **31+ highly curated articles** in **English, Hindi, and Tamil**.
@@ -409,9 +409,9 @@ When internet signal is available, Sarthi dynamically upgrades to a cloud-guided
 
 ---
 
-## 17. Dynamic Permission System Overhaul (Latest Codebase Breakthrough)
+## 17. Android Permission Engineering & Refactoring
 
-During rigorous physical testing on real Android hardware, we discovered a critical, silent failure mode in how permissions are handled. Lesser prototype apps make simple calls that fail in production. We went deep into native Android development to build a bulletproof permission system.
+During physical testing on real Android hardware, I discovered a critical, silent failure mode in how permissions are handled. Many mockups fail in production. I went deep into native Android development to build a clean permission system.
 
 ### The Dual Permission Breakthrough
 
@@ -443,7 +443,7 @@ Fix: Dynamic useRef tracking of permissions:
 ```
 
 ### The Optimized Permissions Sequence (`app/permissions.tsx`)
-Our finalized sequential permissions queue executes flawlessly, providing a premium onboarding experience:
+Our finalized sequential permissions queue executes flawlessly, providing a clean onboarding experience:
 
 ```typescript
 const requestSingle = async (key: PermKey) => {
@@ -477,7 +477,7 @@ const requestAll = async () => {
 
 ---
 
-## 18. Multilingual Translation Architecture (15-Language Core)
+## 18. Multilingual Translation Core (15-Language Registry)
 
 Indian highway corridors span multiple states, and language barriers can be deadly in an emergency. Margi implements a comprehensive **15-Language Translation Registry** (`src/lib/translations/`):
 
@@ -515,7 +515,7 @@ During emergency panic states, standard mobile app text is almost impossible to 
 
 ---
 
-## 20. Screen Map: Every View in the App
+## 20. Screen Navigation Hierarchy
 
 The app's routing hierarchy is cleanly mapped using Expo Router's file-based layout, providing a smooth user journey:
 
@@ -550,7 +550,7 @@ The app's routing hierarchy is cleanly mapped using Expo Router's file-based lay
 
 ---
 
-## 21. Repository Directory Blueprint
+## 21. Repository Directory Tree
 
 Our repository structure is designed cleanly around a standard monorepo configuration:
 
@@ -583,7 +583,7 @@ Margi/ (Repository Root)
 
 ---
 
-## 22. Testing Discipline: 274 Passed Unit Tests Under TDD
+## 22. Test Suite & TDD Validation (274 Unit Tests)
 
 A high-stakes emergency app must not have runtime bugs. We implemented a strict **Test-Driven Development (TDD)** workflow. Every core medical decision, data parsing, and routing algorithm was written as a pure function and validated by automated unit tests before any visual screens were built.
 
@@ -617,7 +617,7 @@ Ran all test suites.
 
 ---
 
-## 23. Build & Installation Guide (Source & Binary)
+## 23. Build & Installation Guide
 
 ### 23.1 Quickest Path (For Hackathon Judges)
 To test the app in under 2 minutes without building from source:
@@ -745,7 +745,7 @@ Our Backend-For-Frontend handles Sarthi AI requests:
 
 Margi is meticulously designed so that no life-saving feature is locked behind an internet connection. Online connections only serve to enhance the fidelity of the experience:
 
-| Feature Core | Offline Mode (Absolute Airplane Mode) ✈️ | Online Mode (GSM Connected) 📶 |
+| Feature Core | Offline Mode (Absolute Airplane Mode) | Online Mode (GSM Connected) |
 |:---|:---|:---|
 | **START Triage FSM** | **FULLY FUNCTIONAL.** Guided chat and Tag mapping run on-device. | **FULLY FUNCTIONAL.** |
 | **Hospital Routing** | **FULLY FUNCTIONAL.** Ranks 50 corridor POIs via local SQLite. | **FULLY FUNCTIONAL.** Enhances route details using online OSRM engines. |
@@ -759,7 +759,7 @@ Margi is meticulously designed so that no life-saving feature is locked behind a
 
 ---
 
-## 27. Milestones & Version History Log
+## 27. Development Version History
 
 Our development milestones track a disciplined engineering sprint toward production stability:
 
@@ -773,7 +773,7 @@ Our development milestones track a disciplined engineering sprint toward product
 
 ---
 
-## 28. Honesty Boundaries (Claims vs. Demo Realities)
+## 28. Scope & Demo Limitations
 
 To ensure our submission is evaluated fairly, we declare our absolute boundaries of implementation:
 
@@ -784,7 +784,7 @@ To ensure our submission is evaluated fairly, we declare our absolute boundaries
 
 ---
 
-## 29. The 8 Major Engineering Problems & Solutions Log
+## 29. Engineering Log: Real-World Bug Solving
 
 During our 200+ hours of software development, we faced several complex engineering challenges. We documented these issues to preserve team institutional memory:
 
@@ -793,7 +793,7 @@ During our 200+ hours of software development, we faced several complex engineer
 * **Root Cause:** We placed a hidden `<CameraView>` element from `expo-camera` inside our custom `useTorch.ts` file to trigger the physical LED flash. TypeScript compilers strictly block JSX elements inside pure `.ts` files.
 * **Fix:** We separated concerns. We restricted `useTorch.ts` to handling permissions and logical state variables, and created a dedicated React component `TorchCameraLayer.tsx` to host the hidden `<CameraView>`. The emergency Response HUD renders this component cleanly.
 
-### 29.2 Countdown Freezes on Emergency selection
+### 29.2 Countdown Freezes on Emergency Selection
 * **Symptom:** Tapping "Road Accident" on the selection portal froze the visual cancel countdown at `0` and blocked transitions to the main HUD.
 * **Root Cause:** The orchestrator sequence was triggered asynchronously *before* the React router was fully mounted, locking the navigation thread.
 * **Fix:** We adjusted the execution sequence in `activation.tsx`. The app now executes navigation first using the `useRootNavigationState()` guard, and launches the emergency orchestrator only once the target HUD route is fully mounted.
@@ -817,7 +817,7 @@ During our 200+ hours of software development, we faced several complex engineer
 * **Symptom:** The emergency orchestrator fired SMS intents instantly upon tapping the quick SOS button, before the user could select the category or cancel a false alarm.
 * **Fix:** We unified all emergency SOS buttons through the `selection.tsx` Incident Tracker portal. We introduced `holdSosReleaseGrace.ts` to prevent accidental triggers and disabled background automated SMS dispatches during countdown phases.
 
-### 29.7 Windows Gradle Out-Of-Memory compilation Errors
+### 29.7 Windows Gradle Out-Of-Memory Compilation Errors
 * **Symptom:** Compiling local APK debug builds threw Gradle process exceptions: `CreateProcess error=1455, The paging file is too small`.
 * **Root Cause:** The default Expo prebuild runs parallel Gradle processes, overcommitting Windows memory threads during deep C++ compilation blocks.
 * **Fix:** Added custom memory limit configurations to `novadrive-mobile/android/gradle.properties`:
@@ -878,6 +878,6 @@ To explore specific implementation components in full detail, navigate to these 
 
 ---
 
-*This document was passionately prepared by Team NovaDrive for the CoERS & RBG Labs / MoRTH National Road Safety Hackathon 2026 at IIT Madras.*  
+*This document was written by Team NovaDrive for the CoERS & RBG Labs / MoRTH National Road Safety Hackathon 2026 at IIT Madras.*  
 *All 274 Jest unit tests are verified green. Build tag `v2.0.0-production` compiles cleanly.*  
 *Let's make India's highways safer, one corridor at a time.*
