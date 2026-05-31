@@ -21,8 +21,48 @@ function triagePromptForLanguage(
   language: string
 ): string {
   if (language === 'hi' && question.promptHi) return question.promptHi;
+  if (language === 'ta' && question.promptTa) return question.promptTa;
   return question.prompt;
 }
+
+function triageOptionForLanguage(
+  option: { label: string; labelHi?: string; labelTa?: string },
+  language: string
+): string {
+  if (language === 'hi' && option.labelHi) return option.labelHi;
+  if (language === 'ta' && option.labelTa) return option.labelTa;
+  return option.label;
+}
+
+const TRIAGE_TRANSLATIONS: Record<string, Record<string, string>> = {
+  en: {
+    step: "Triage",
+    title: "START assessment",
+    subtitle: "Answer each question for triage color tagging.",
+    completeTitle: "Triage complete",
+    completeSubtitle: "Routing to trauma response.",
+    completeCard: "Assessment recorded. Proceed to response.",
+    continue: "Continue",
+  },
+  hi: {
+    step: "ट्राइएज",
+    title: "START मूल्यांकन",
+    subtitle: "ट्राइएज रंग टैगिंग के लिए प्रत्येक प्रश्न का उत्तर दें।",
+    completeTitle: "मूल्यांकन पूर्ण",
+    completeSubtitle: "ट्रॉमा रिस्पॉन्स पर निर्देशित किया जा रहा है।",
+    completeCard: "मूल्यांकन दर्ज किया गया। आगे बढ़ें।",
+    continue: "आगे बढ़ें",
+  },
+  ta: {
+    step: "ட்ரைஏஜ்",
+    title: "START மதிப்பீடு",
+    subtitle: "ட்ரைஏஜ் வண்ணக் குறியீட்டுக்கு ஒவ்வொரு கேள்விக்கும் பதிலளிக்கவும்.",
+    completeTitle: "மதிப்பீடு முடிந்தது",
+    completeSubtitle: "அதிர்ச்சி பதிலுக்கு வழிநடத்துகிறது.",
+    completeCard: "மதிப்பீடு பதிவு செய்யப்பட்டது. தொடரவும்.",
+    continue: "தொடரவும்",
+  }
+};
 
 /**
  * START triage FSM — spoken prompts when accessibility TTS is enabled.
@@ -38,6 +78,8 @@ export default function TriageScreen() {
   } = useApp();
 
   const question = getQuestion(triageState);
+  const langKey = settings.language === 'hi' || settings.language === 'ta' ? settings.language : 'en';
+  const t = TRIAGE_TRANSLATIONS[langKey];
 
   useEffect(() => {
     if (shouldGateTriageWithoutIncident(session.incidentType)) {
@@ -64,20 +106,20 @@ export default function TriageScreen() {
   if (!question) {
     return (
       <EmergencyStepShell
-        step="Triage"
-        title="Triage complete"
-        subtitle="Routing to trauma response."
+        step={t.step}
+        title={t.completeTitle}
+        subtitle={t.completeSubtitle}
         showBack
         footer={
           <MargiButton
-            label="Continue"
+            label={t.continue}
             large
             onPress={() => router.replace(EMERGENCY_RESPONSE_PATH as Href)}
           />
         }
       >
         <HudCard accent="tertiary">
-          <HudText variant="bodyMd">Assessment recorded. Proceed to response.</HudText>
+          <HudText variant="bodyMd">{t.completeCard}</HudText>
         </HudCard>
       </EmergencyStepShell>
     );
@@ -85,9 +127,9 @@ export default function TriageScreen() {
 
   return (
     <EmergencyStepShell
-      step="Triage"
-      title="START assessment"
-      subtitle="Answer each question for triage color tagging."
+      step={t.step}
+      title={t.title}
+      subtitle={t.subtitle}
       showBack
     >
       <MedicalDisclaimerBanner compact />
@@ -101,7 +143,10 @@ export default function TriageScreen() {
           </HudText>
         ) : null}
         <AnswerChips
-          options={question.options}
+          options={question.options.map((o) => ({
+            ...o,
+            label: triageOptionForLanguage(o, settings.language),
+          }))}
           onSelect={(value) => answerTriage(value)}
         />
       </HudCard>

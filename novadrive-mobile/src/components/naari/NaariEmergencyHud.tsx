@@ -20,6 +20,9 @@ export function NaariEmergencyHud({ visible, onCancel }: Props) {
         <HudText variant="bodyMd" style={styles.recordingNotice}>
           Recording started for your safety. Audio is stored on this device only.
         </HudText>
+        <HudText variant="bodySm" style={styles.dpdpConsentNotice}>
+          Consent Notice: Voice recording is active under DPDP Act 2023 §4(2). Audio is processed locally on-device solely for rescue operations and evidence validation.
+        </HudText>
         <HudText variant="bodyMd" style={styles.body}>
           GPS coordinates transmitted. Dispatching immediate response team to your location.
         </HudText>
@@ -59,6 +62,20 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     maxWidth: 320,
     fontFamily: 'PublicSans_700Bold',
+  },
+  dpdpConsentNotice: {
+    color: 'rgba(255, 255, 255, 0.85)',
+    fontSize: 11,
+    lineHeight: 16,
+    textAlign: 'center',
+    marginBottom: 16,
+    maxWidth: 320,
+    fontFamily: 'PublicSans_400Regular',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+    padding: 8,
+    borderRadius: tokens.radius.button,
+    backgroundColor: 'rgba(0, 10, 30, 0.15)',
   },
   body: { color: tokens.onSecondary, textAlign: 'center', marginBottom: 32, maxWidth: 320 },
   primaryBtn: {

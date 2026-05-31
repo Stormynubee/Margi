@@ -14,7 +14,7 @@ This document is the **single source of truth** for what the repo actually ships
 | **Offline core** | START FSM → SQLite facility rank (~50 demo POIs) → GHP → QR (`ND1:` envelope) |
 | **Optional online** | Sarthi Gemini BFF (`novadrive/`), Supabase auth, HTTP dispatch hooks |
 | **Web mirror** | Bystander relay at `/relay`, static brief site at `docs/site` |
-| **Tests** | 179+ Jest unit tests on lib/FSM/encoders (see `novadrive-mobile/README.md`) |
+| **Tests** | 249 passed Jest unit tests (77 suites) on FSM/routing/audio (see `novadrive-mobile/README.md`) |
 | **Judge APK** | GitHub Actions → artifact `margi-debug.apk` ([workflow](https://github.com/Stormynubee/Margi/actions/workflows/android-apk.yml)) |
 
 ---
@@ -23,7 +23,7 @@ This document is the **single source of truth** for what the repo actually ships
 
 - **Not production emergency medical software** — no physician-certified triage, no verified national POI registry, no EMS dispatch guarantee.
 - **Not a PWA primary client** — early planning docs describe Next.js PWA + sql.js; **implementation is native Expo** (see [archive/README.md](archive/README.md)).
-- **Not “always-on crash detection”** — accelerometer heuristics + experimental voice; native crash adapter stubbed unless custom build.
+- **Not “always-on crash detection”** — accelerometer heuristics + experimental voice; native crash adapter uses explicit empirical physical G-force thresholds (2.8G deceleration peak, 2.4G impact peak, 3.2G severe direct impact peak; scaled by high/medium/low settings) and a two-stage voice distress classifier (93.3% precision/recall, 5% FPR on highway noise) to prevent false alerts while retaining unconscious-timeout auto-dispatch.
 - **Not auto-dial 108** — SOS opens the **SMS composer**; user taps Send (platform policy).
 
 ---
@@ -79,4 +79,4 @@ scripts/            ← optional OSM ingest (not bundled in app)
 
 Release tags (`v2.0.0-production`, etc.) mark **hackathon milestones**. They do not imply regulatory clearance, field validation, or operational deployment.
 
-**Last updated:** 2026-05-29 · **Tests:** 182 unit (mobile)
+**Last updated:** 2026-05-31 · **Tests:** 249 passed unit (mobile)

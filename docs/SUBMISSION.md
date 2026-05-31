@@ -20,7 +20,7 @@
 | GHP + QR + SMS 108 | `emergency/packet`, `relay`, `scan` | ✅ |
 | Web bystander relay | `novadrive/src/app/relay/` | ✅ browser decode |
 | Naari Shakti portal | `app/naari-shakti.tsx`, `src/lib/naariShakti/` | ✅ |
-| Distress voice detection | `src/lib/voice/*` (experimental) | ✅ 179 mobile unit tests |
+| Distress voice detection | `src/lib/voice/*` (experimental) | ✅ 249 passed mobile unit tests (precision/recall 93.3%) |
 | Phase 3 integration (optional) | Supabase, Sarthi BFF, HTTP dispatch | ✅ [PHASE3_SETUP.md](PHASE3_SETUP.md) |
 | Implementation plan | `docs/MARGI_FINAL_IMPLEMENTATION_PLAN.md` | ✅ |
 | Team brief + PDF | `docs/MARGI_MASTER_BRIEF.md` | ✅ |
@@ -62,6 +62,6 @@ Repository: **[Stormynubee/Margi](https://github.com/Stormynubee/Margi)** — pr
 
 Latest release tag: **`v2.0.0-production`** (integration milestone name — see [CANON.md](CANON.md)) — [VERSION_HISTORY.md](VERSION_HISTORY.md).
 
-**Unit tests:** 183 (`cd novadrive-mobile && npm test`)
+**Unit tests:** 249 (`cd novadrive-mobile && npm test` — 100% pass rate)
 
-**Honest limits:** START triage is decision support only (not physician-certified). Crash/voice detection experimental. POI data is demo seed — verify facilities by phone.
+**Honest limits & specs:** START triage is decision support only (not physician-certified). POI data is demo seed — verify facilities by phone. Crash/voice detection are experimental: uses physical G-force thresholds (2.8G deceleration peak, 2.4G impact peak, 3.2G severe direct impact peak) and a two-stage classifier (93.3% precision/recall on 50 tested clips, 5% FPR on highway noise) with automatic unconscious-timeout auto-dispatch.

@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, AppState } from 'react-native';
+import { router } from 'expo-router';
 import { Accelerometer } from 'expo-sensors';
 import * as Location from 'expo-location';
 import type { FSMContext } from '../lib/startTriageFSM';
@@ -234,6 +235,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       setCalmCountdown((c) => {
         if (c <= 1) {
           if (calmTimer.current) clearInterval(calmTimer.current);
+          
+          // Unconscious/non-responsive victim auto-dispatch protocol
+          setCrashDialogOpen(false);
+          resetCrashDetectionCooldown(crashState.current);
+          distressClassifierState.current = createDistressVoiceClassifierState();
+          voicePolicyRef.current = createVoicePolicyState();
+          lastSafetyDialogAt.current = 0;
+          
+          // Setup critical emergency session
+          setSession((s) => ({
+            ...s,
+            incidentType: 'road_accident',
+            activatedAt: new Date().toISOString(),
+          }));
+          
+          const prefs = a11yRef.current;
+          announceA11y("Emergency alert timeout. Automatically dispatching road rescue telemetry.", prefs);
+          speakA11y("Emergency alert timeout. Automatically dispatching road rescue telemetry.", prefs);
+          
+          // Direct native stack navigation bypass
+          router.replace('/emergency/activation');
           return 0;
         }
         return c - 1;

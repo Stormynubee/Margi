@@ -17,11 +17,23 @@ export function triagePromptForLang(
 ): { prompt: string; options: string[] } | null {
   const q = getQuestion(state);
   if (!q) return null;
+  
   const prompt =
-    lang === 'hi' && q.promptHi ? q.promptHi : q.prompt;
+    lang === 'hi' && q.promptHi
+      ? q.promptHi
+      : lang === 'ta' && q.promptTa
+      ? q.promptTa
+      : q.prompt;
+      
+  const options = q.options.map((o) => {
+    if (lang === 'hi' && o.labelHi) return o.labelHi;
+    if (lang === 'ta' && o.labelTa) return o.labelTa;
+    return o.label;
+  });
+  
   return {
     prompt,
-    options: q.options.map((o) => o.label),
+    options,
   };
 }
 

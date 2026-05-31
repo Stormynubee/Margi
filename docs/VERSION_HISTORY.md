@@ -1,13 +1,13 @@
-# NovaDrive — version & commit history
+# Margi — version & commit history
 
-Complete timeline for [Stormynubee/novadrive](https://github.com/Stormynubee/novadrive) on branch **`master`**.
+Complete timeline for [Stormynubee/Margi](https://github.com/Stormynubee/Margi) on branch **`master`**.
 
-**Fork this repo:** [github.com/Stormynubee/novadrive/fork](https://github.com/Stormynubee/novadrive/fork) — use GitHub **Fork** to copy under your account, then clone your fork.
+**Fork this repo:** [github.com/Stormynubee/Margi/fork](https://github.com/Stormynubee/Margi/fork) — use GitHub **Fork** to copy under your account, then clone your fork.
 
 **Compare any two versions:**
 
 ```text
-https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
+https://github.com/Stormynubee/Margi/compare/<older>...<newer>
 ```
 
 ---
@@ -16,16 +16,16 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 | Tag | Commit | Date | Summary |
 |-----|--------|------|---------|
-| [`v2.0.0-production`](https://github.com/Stormynubee/novadrive/releases/tag/v2.0.0-production) | `dc22318` | 2026-05-28 | Supabase auth, NGO registry, OSRM routing, Gemini BFF health, HTTP dispatch, native crash layer |
-| [`v1.7.0-p1-features`](https://github.com/Stormynubee/novadrive/releases/tag/v1.7.0-p1-features) | `8ad6dba` | 2026-05-28 | Rah-Veer, offline trip cards, journey debrief/history, FSM TTS narrator |
-| [`v1.6.0-hud-redesign`](https://github.com/Stormynubee/novadrive/releases/tag/v1.6.0-hud-redesign) | `8ad6dba` | 2026-05-28 | Drive HUD: SOS top, compact speedometer, fixed layout |
-| [`v1.5.0-margi-rebrand`](https://github.com/Stormynubee/novadrive/releases/tag/v1.5.0-margi-rebrand) | `50205c7` | 2026-05-28 | Margi Care Path rebrand, `com.margi.app`, MARGI GHP, docs/banner sweep |
-| [`v0.1.0-p0`](https://github.com/Stormynubee/novadrive/releases/tag/v0.1.0-p0) | `7b5b25a` | 2026-05-22 | Expo P0 app, triage FSM, GHP/QR, monorepo CI |
-| [`v1.0.0-govtech-ui`](https://github.com/Stormynubee/novadrive/releases/tag/v1.0.0-govtech-ui) | `108e716` | 2026-05-25 | GovTech tabs, Plan Corridor, calibration, SOS HUD |
-| [`v1.1.0-stabilization`](https://github.com/Stormynubee/novadrive/releases/tag/v1.1.0-stabilization) | `bdd5a04` | 2026-05-25 | Journey lifecycle, voice/impact gating, 32 unit tests |
-| [`v1.2.0-hackathon-publish`](https://github.com/Stormynubee/novadrive/releases/tag/v1.2.0-hackathon-publish) | `161798c` | 2026-05-25 | Publish docs, VERSION_HISTORY, release tags |
-| [`v1.3.0-naari-shakti`](https://github.com/Stormynubee/novadrive/releases/tag/v1.3.0-naari-shakti) | `c828e90` | 2026-05-26 | Naari Shakti portal, home stack, emergency activation fix |
-| [`v1.4.0-distress-voice`](https://github.com/Stormynubee/novadrive/releases/tag/v1.4.0-distress-voice) | `7370f90` | 2026-05-28 | Distress voice pipeline, smoke 23–26, 135 unit tests |
+| [`v2.0.0-production`](https://github.com/Stormynubee/Margi/releases/tag/v2.0.0-production) | `dc22318` | 2026-05-28 | Supabase auth, NGO registry, OSRM routing, Gemini BFF health, HTTP dispatch, native crash layer |
+| [`v1.7.0-p1-features`](https://github.com/Stormynubee/Margi/releases/tag/v1.7.0-p1-features) | `8ad6dba` | 2026-05-28 | Rah-Veer, offline trip cards, journey debrief/history, FSM TTS narrator |
+| [`v1.6.0-hud-redesign`](https://github.com/Stormynubee/Margi/releases/tag/v1.6.0-hud-redesign) | `8ad6dba` | 2026-05-28 | Drive HUD: SOS top, compact speedometer, fixed layout |
+| [`v1.5.0-margi-rebrand`](https://github.com/Stormynubee/Margi/releases/tag/v1.5.0-margi-rebrand) | `50205c7` | 2026-05-28 | Margi Care Path rebrand, `com.margi.app`, MARGI GHP, docs/banner sweep |
+| [`v0.1.0-p0`](https://github.com/Stormynubee/Margi/releases/tag/v0.1.0-p0) | `7b5b25a` | 2026-05-22 | Expo P0 app, triage FSM, GHP/QR, monorepo CI |
+| [`v1.0.0-govtech-ui`](https://github.com/Stormynubee/Margi/releases/tag/v1.0.0-govtech-ui) | `108e716` | 2026-05-25 | GovTech tabs, Plan Corridor, calibration, SOS HUD |
+| [`v1.1.0-stabilization`](https://github.com/Stormynubee/Margi/releases/tag/v1.1.0-stabilization) | `bdd5a04` | 2026-05-25 | Journey lifecycle, voice/impact gating, 32 unit tests |
+| [`v1.2.0-hackathon-publish`](https://github.com/Stormynubee/Margi/releases/tag/v1.2.0-hackathon-publish) | `161798c` | 2026-05-25 | Publish docs, VERSION_HISTORY, release tags |
+| [`v1.3.0-naari-shakti`](https://github.com/Stormynubee/Margi/releases/tag/v1.3.0-naari-shakti) | `c828e90` | 2026-05-26 | Naari Shakti portal, home stack, emergency activation fix |
+| [`v1.4.0-distress-voice`](https://github.com/Stormynubee/Margi/releases/tag/v1.4.0-distress-voice) | `7370f90` | 2026-05-28 | Distress voice pipeline, smoke 23–26, 135 unit tests |
 
 ---
 
@@ -38,7 +38,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Initial team brief static site under `docs/site/`
 - Vercel config for hackathon brief hosting
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/1ee8d75)
+[View commit](https://github.com/Stormynubee/Margi/commit/1ee8d75)
 
 ---
 
@@ -48,7 +48,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - Brief site markdown/HTML rendering fixes
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/0d9dcad)
+[View commit](https://github.com/Stormynubee/Margi/commit/0d9dcad)
 
 ---
 
@@ -62,7 +62,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Root CI: mobile tests, web build, docs site build
 - Rebrand from RelaySaathi → NovaDrive
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/7b5b25a)
+[View commit](https://github.com/Stormynubee/Margi/commit/7b5b25a)
 
 ---
 
@@ -76,7 +76,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Profile photo, `DashboardHeader`, GovTech design tokens
 - Trip offline briefing (`trip/plan`, `trip/discover`)
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/108e716) · [Compare from P0](https://github.com/Stormynubee/novadrive/compare/v0.1.0-p0...108e716)
+[View commit](https://github.com/Stormynubee/Margi/commit/108e716) · [Compare from P0](https://github.com/Stormynubee/Margi/compare/v0.1.0-p0...108e716)
 
 ---
 
@@ -90,7 +90,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - `journeyMonitoring.ts` + tests: `parseEmergencyText`, `ghp`, `storage`, expanded FSM/crash suites (**32 tests**)
 - `package.json`: `typecheck`, `test:coverage`, `test:watch`
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/bdd5a04) · [Compare from GovTech UI](https://github.com/Stormynubee/novadrive/compare/v1.0.0-govtech-ui...bdd5a04)
+[View commit](https://github.com/Stormynubee/Margi/commit/bdd5a04) · [Compare from GovTech UI](https://github.com/Stormynubee/Margi/compare/v1.0.0-govtech-ui...bdd5a04)
 
 ---
 
@@ -104,7 +104,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Stitch design refs, team guide HTML, superpowers specs/plans
 - Issue template links (team guide, smoke matrix)
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/e819032)
+[View commit](https://github.com/Stormynubee/Margi/commit/e819032)
 
 ---
 
@@ -115,7 +115,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Removed `.cursor/agents` from public tree (local IDE only via `.gitignore`)
 - Trimmed `docs/AGENTS.md` subagent path reference
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/fb1b176)
+[View commit](https://github.com/Stormynubee/Margi/commit/fb1b176)
 
 ---
 
@@ -125,9 +125,9 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - [docs/VERSION_HISTORY.md](VERSION_HISTORY.md) — every commit, compare links, checkout commands
 - Git tags `v0.1.0-p0` … `v1.2.0-hackathon-publish`
-- README links to version history and [Fork](https://github.com/Stormynubee/novadrive/fork)
+- README links to version history and [Fork](https://github.com/Stormynubee/Margi/fork)
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/11984ba)
+[View commit](https://github.com/Stormynubee/Margi/commit/11984ba)
 
 ---
 
@@ -137,7 +137,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - Timeline entry for the version-history doc commit itself
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/161798c)
+[View commit](https://github.com/Stormynubee/Margi/commit/161798c)
 
 ---
 
@@ -148,7 +148,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Shared Plan Corridor screen on Trip tab; offline briefing deep links
 - Nova quick menu sheet; Sarthi overlay and journey safety bridges
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/d900ab5)
+[View commit](https://github.com/Stormynubee/Margi/commit/d900ab5)
 
 ---
 
@@ -159,7 +159,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Gender on profile; eligibility gating; protocol modal and `/naari-shakti` dashboard
 - Distress engine, hold timer, SMS bodies, emergency recorder — 57 unit tests
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/f8f6dce)
+[View commit](https://github.com/Stormynubee/Margi/commit/f8f6dce)
 
 ---
 
@@ -170,7 +170,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - `HomePrimaryStack` — stacked drive + Naari cards; portal bento column layout
 - First-hold emergency: instant distress HUD, location prefetch/cache, hold timer + release grace
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/c828e90)
+[View commit](https://github.com/Stormynubee/Margi/commit/c828e90)
 
 ---
 
@@ -181,7 +181,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 - Policy grace (navigation, TTS, recorder warm-up); two-stage classifier + golden fixtures
 - Naari + journey voice mount; Profile sensitivity; smoke rows 23–26; debug ingest removed
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/7370f90)
+[View commit](https://github.com/Stormynubee/Margi/commit/7370f90)
 
 ---
 
@@ -191,7 +191,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - Safety brief stat strip layout; `ACTIVATION_SPLASH_SECONDS = 10`
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/5008608)
+[View commit](https://github.com/Stormynubee/Margi/commit/5008608)
 
 ---
 
@@ -201,7 +201,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - Institutional GovTech brief detail screens and acknowledgment storage
 
-[View commit](https://github.com/Stormynubee/novadrive/commit/f3f2222)
+[View commit](https://github.com/Stormynubee/Margi/commit/f3f2222)
 
 ---
 
@@ -211,7 +211,7 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 - Root + mobile README synced; `npm run verify:docs`; tag `v1.4.0-distress-voice`
 
-[Latest on master](https://github.com/Stormynubee/novadrive/commits/master/)
+[Latest on master](https://github.com/Stormynubee/Margi/commits/master/)
 
 ---
 
@@ -219,16 +219,16 @@ https://github.com/Stormynubee/novadrive/compare/<older>...<newer>
 
 | Repo | Branch | Commits (this effort) |
 |------|--------|------------------------|
-| [Stormynubee/novadrive](https://github.com/Stormynubee/novadrive) | `master` | Table above |
-| [Stormynubee/Stormynubee](https://github.com/Stormynubee/Stormynubee) | `main` | Profile README: NovaDrive sandbox card (`bbbf72c`, `52ed9eb`, `3070b2c`) |
+| [Stormynubee/Margi](https://github.com/Stormynubee/Margi) | `master` | Table above |
+| [Stormynubee/Stormynubee](https://github.com/Stormynubee/Stormynubee) | `main` | Profile README: Margi sandbox card (`bbbf72c`, `52ed9eb`, `3070b2c`) |
 
 ---
 
 ## Checkout a specific version locally
 
 ```bash
-git clone https://github.com/Stormynubee/novadrive.git
-cd novadrive
+git clone https://github.com/Stormynubee/Margi.git
+cd Margi
 
 # P0 only
 git checkout v0.1.0-p0
@@ -261,4 +261,4 @@ git push origin v1.4.0-distress-voice
 
 ## Full diff: project start → now
 
-[Compare `1ee8d75`…`master`](https://github.com/Stormynubee/novadrive/compare/1ee8d75...master)
+[Compare `1ee8d75`…`master`](https://github.com/Stormynubee/Margi/compare/1ee8d75...master)
