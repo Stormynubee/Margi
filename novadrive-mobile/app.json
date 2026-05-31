@@ -36,7 +36,9 @@
         "ACCESS_COARSE_LOCATION",
         "CAMERA",
         "HIGH_SAMPLING_RATE_SENSORS",
-        "RECORD_AUDIO"
+        "RECORD_AUDIO",
+        "SEND_SMS",
+        "CALL_PHONE"
       ]
     },
     "web": {
