@@ -1,0 +1,195 @@
+import * as Crypto from 'expo-crypto';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import { GHP_HASH_PREFIX, GHP_SMS_HEADER } from './brand';
+import { resolveRegionalCoverage } from './regionalCoverage';
+import { formatIceLine } from './storage';
+import type { EmergencySession, GoldenHourPacket, MedicalProfile } from './types';
+
+async function newPacketId(): Promise<string> {
+  return Crypto.randomUUID();
+}
+
+export async function hashPayload(payload: string): Promise<string> {
+  const digest = await Crypto.digestStringAsync(
+    Crypto.CryptoDigestAlgorithm.SHA256,
+    payload
+  );
+  return `${GHP_HASH_PREFIX}-${digest.slice(0, 8)}`;
+}
+
+export const DISPATCH_108: EmergencySession['facility'] = {
+  id: '108',
+  name: 'National emergency (108)',
+  type: 'hospital',
+  traumaTier: 2,
+  phone: '108',
+  distanceKm: 0,
+  etaMinutes: 0,
+  verified: true,
+};
+
+function resolvePacketFacility(session: EmergencySession): EmergencySession['facility'] | null {
+  if (session.facility) return session.facility;
+  if (!session.location || !session.triage) return null;
+  if (session.triage === 'BLACK') return DISPATCH_108;
+  const coverage = resolveRegionalCoverage(session.location.lat, session.location.lng);
+  if (coverage.mode === 'baseline') return DISPATCH_108;
+  return null;
+}
+
+export async function buildPacket(
+  session: EmergencySession,
+  medical?: MedicalProfile
+): Promise<GoldenHourPacket | null> {
+  if (!session.location || !session.triage) return null;
+  const facility = resolvePacketFacility(session);
+  if (!facility) return null;
+
+  const id = await newPacketId();
+  const coverage = resolveRegionalCoverage(session.location.lat, session.location.lng);
+  const core = JSON.stringify({
+    id,
+    triage: session.triage,
+    lat: session.location.lat,
+    lng: session.location.lng,
+  });
+  const integrity = await hashPayload(core);
+
+  return {
+    id,
+    createdAt: new Date().toISOString(),
+    triage: session.triage,
+    location: session.location,
+    victims: {
+      count: 1,
+      canWalk: session.triage === 'GREEN',
+      breathing: session.triage !== 'BLACK',
+      severeBleeding: session.triage === 'RED',
+      capillaryRefillOk: session.triage !== 'RED',
+      followsCommands: session.triage === 'GREEN' || session.triage === 'YELLOW',
+    },
+    routing: {
+      facilityName: facility.name,
+      facilityType: facility.type,
+      phone: facility.phone,
+      etaMinutes: facility.etaMinutes,
+      distanceKm: facility.distanceKm,
+    },
+    emergency: { dial: '108', state: coverage.stateName, language: 'en' },
+    integrity,
+  };
+}
+
+export function formatSms(packet: GoldenHourPacket, medical?: MedicalProfile): string {
+  const loc = packet.location;
+  const line = loc.landmark ?? `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`;
+  let body =
+    `${GHP_SMS_HEADER}\n` +
+    `Triage: ${packet.triage}\n` +
+    `Location: ${line}\n` +
+    `Facility: ${packet.routing.facilityName} (~${Math.round(packet.routing.distanceKm)}km, ~${packet.routing.etaMinutes}min)\n` +
+    `Phone: ${packet.routing.phone}\n`;
+  if (medical?.bloodType) body += `Blood: ${medical.bloodType}\n`;
+  const ice =
+    medical?.primaryContact
+      ? formatIceLine(medical.primaryContact)
+      : medical?.emergencyContact;
+  if (ice) body += `ICE: ${ice}\n`;
+  body += `Hash: ${packet.integrity}`;
+  return body.slice(0, 800);
+}
+
+export function qrMinimalJson(packet: GoldenHourPacket): string {
+  return JSON.stringify({
+    id: packet.id,
+    triage: packet.triage,
+    lat: packet.location.lat,
+    lng: packet.location.lng,
+    integrity: packet.integrity,
+  });
+}
+
+export function encodeQrPayload(packet: GoldenHourPacket): string {
+  const compressed = compressToEncodedURIComponent(qrMinimalJson(packet));
+  return `ND1:${compressed}`;
+}
+
+const DEFAULT_RELAY_WEB_BASE = 'https://margi-tau.vercel.app/relay';
+
+/** Browser-openable relay URL for bystanders without the Margi app installed. */
+export function encodeQrRelayUrl(packet: GoldenHourPacket, webBase = DEFAULT_RELAY_WEB_BASE): string {
+  const payload = encodeQrPayload(packet);
+  return `${webBase}?p=${encodeURIComponent(payload)}`;
+}
+
+/** Recompute checksum for minimal QR fields (detects accidental corruption, not tampering). */
+export async function verifyQrDecodedIntegrity(decoded: QrDecodedMinimal): Promise<boolean> {
+  const core = JSON.stringify({
+    id: decoded.id,
+    triage: decoded.triage,
+    lat: decoded.lat,
+    lng: decoded.lng,
+  });
+  const expected = await hashPayload(core);
+  return decoded.integrity === expected;
+}
+
+export type QrDecodedMinimal = {
+  id: string;
+  triage: string;
+  lat: number;
+  lng: number;
+  integrity: string;
+};
+
+export function decodeQrPayload(raw: string): QrDecodedMinimal | null {
+  try {
+    const payload = raw.startsWith('ND1:') ? raw.slice(4) : raw;
+    const json = raw.startsWith('ND1:')
+      ? decompressFromEncodedURIComponent(payload)
+      : raw;
+    if (!json) return null;
+    const parsed = JSON.parse(json);
+    if (!parsed?.id || !parsed?.integrity) return null;
+    return parsed;
+  } catch {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+}
+
+/** Reconstruct a relay-ready packet from minimal QR decode (full round-trip for bystander scan). */
+export function packetFromQrDecoded(decoded: QrDecodedMinimal): GoldenHourPacket {
+  const triage = decoded.triage as GoldenHourPacket['triage'];
+  const coverage = resolveRegionalCoverage(decoded.lat, decoded.lng);
+  return {
+    id: decoded.id,
+    createdAt: new Date().toISOString(),
+    triage,
+    location: {
+      lat: decoded.lat,
+      lng: decoded.lng,
+      capturedAt: new Date().toISOString(),
+    },
+    victims: {
+      count: 1,
+      canWalk: triage === 'GREEN',
+      breathing: triage !== 'BLACK',
+      severeBleeding: triage === 'RED',
+      capillaryRefillOk: triage !== 'RED',
+      followsCommands: triage === 'GREEN' || triage === 'YELLOW',
+    },
+    routing: {
+      facilityName: 'From QR relay',
+      facilityType: 'hospital',
+      phone: '108',
+      etaMinutes: 0,
+      distanceKm: 0,
+    },
+    emergency: { dial: '108', state: coverage.stateName, language: 'en' },
+    integrity: decoded.integrity,
+  };
+}

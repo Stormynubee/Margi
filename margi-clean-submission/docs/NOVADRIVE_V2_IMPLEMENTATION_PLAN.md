@@ -1,0 +1,3 @@
+# Moved
+
+Renamed to **[MARGI_V2_IMPLEMENTATION_PLAN.md](./MARGI_V2_IMPLEMENTATION_PLAN.md)**.

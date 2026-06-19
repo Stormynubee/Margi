@@ -1,0 +1,81 @@
+{
+  "expo": {
+    "name": "Margi",
+    "slug": "novadrive-mobile",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "scheme": "margi",
+    "userInterfaceStyle": "light",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.margi.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Margi uses your location during an active journey to route emergencies and build the Golden Hour Packet.",
+        "NSCameraUsageDescription": "Margi uses the camera to scan bystander relay QR codes.",
+        "NSMicrophoneUsageDescription": "Margi records short emergency audio during Naari Shakti distress activation and may listen for distress sounds during an active journey.",
+        "NSPhotoLibraryUsageDescription": "Margi uses your photo library so you can choose a profile picture."
+      }
+    },
+    "android": {
+      "package": "com.margi.app",
+      "softwareKeyboardLayoutMode": "pan",
+      "adaptiveIcon": {
+        "backgroundColor": "#ffffff",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "CAMERA",
+        "HIGH_SAMPLING_RATE_SENSORS",
+        "RECORD_AUDIO",
+        "SEND_SMS",
+        "CALL_PHONE"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Margi uses your location during an active journey to route emergencies and build the Golden Hour Packet."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Margi uses the camera to scan bystander relay QR codes."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "Margi listens for distress sounds during an active journey only — nothing is recorded or sent automatically."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Margi uses your photo library when you choose a profile picture."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

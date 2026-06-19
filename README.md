@@ -271,3 +271,5 @@ Sarthi BFF: set `EXPO_PUBLIC_SARTHI_API_URL` in mobile `.env` to your deployed `
 [MIT](LICENSE) — IIT Madras Road Safety Hackathon submission and open continuation.
 
 *Margi · Team NovaDrive · When signal drops, the path still holds.*
+
+<!-- docs update: margi -->

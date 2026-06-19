@@ -1,0 +1,10 @@
+{
+  "name": "Margi",
+  "short_name": "Margi",
+  "description": "Offline emergency triage and dispatch relay",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f9fb",
+  "theme_color": "#0056b3",
+  "orientation": "portrait"
+}

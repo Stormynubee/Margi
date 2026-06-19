@@ -1,0 +1,179 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useApp } from '../context/AppContext';
+import { useHomeLocationWeather } from './useHomeLocationWeather';
+import { checkSarthiBffHealth, type SarthiBffStatus } from '../lib/sarthi/sarthiHealth';
+import { buildSarthiUserContext } from '../lib/sarthi/buildSarthiContext';
+import {
+  createProductionDeps,
+  createThread,
+  sendMessage,
+} from '../lib/sarthiEngine';
+import type { SarthiThread, SarthiUserContext } from '../lib/sarthiTypes';
+
+const STORAGE_KEY = '@novadrive/sarthi-thread';
+
+export function useSarthiChat() {
+  const { journeyStatus, profile, session } = useApp();
+  const { lat, lng, regionLabel, cityLabel, refresh: refreshLocation } = useHomeLocationWeather();
+  const apiBase = process.env.EXPO_PUBLIC_SARTHI_API_URL ?? '';
+  const deps = useMemo(() => createProductionDeps(apiBase), [apiBase]);
+
+  useEffect(() => {
+    void refreshLocation();
+  }, [refreshLocation]);
+
+  const locationContext = useMemo(() => {
+    if (session.location) {
+      return { lat: session.location.lat, lng: session.location.lng };
+    }
+    if (lat != null && lng != null) {
+      return { lat, lng, regionLabel: regionLabel || cityLabel };
+    }
+    return { regionLabel: regionLabel || cityLabel };
+  }, [session.location, lat, lng, regionLabel, cityLabel]);
+
+  const context: SarthiUserContext = useMemo(
+    () =>
+      buildSarthiUserContext(
+        profile,
+        journeyStatus === 'ACTIVE' ? 'ACTIVE' : 'IDLE',
+        locationContext
+      ),
+    [profile, journeyStatus, locationContext]
+  );
+
+  const [thread, setThread] = useState<SarthiThread | null>(null);
+  const threadRef = useRef<SarthiThread | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [networkOffline, setNetworkOffline] = useState(false);
+  const [bffStatus, setBffStatus] = useState<SarthiBffStatus>(!apiBase.trim() ? 'unconfigured' : 'offline');
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    threadRef.current = thread;
+  }, [thread]);
+
+  useEffect(() => {
+    setBffStatus(!apiBase.trim() ? 'unconfigured' : 'offline');
+    if (!apiBase.trim()) return;
+    let cancelled = false;
+    void checkSarthiBffHealth(apiBase).then((status) => {
+      if (!cancelled) setBffStatus(status);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase]);
+
+  const bffUnavailable = bffStatus !== 'online';
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw && !cancelled) {
+          const parsed = JSON.parse(raw) as SarthiThread;
+          setThread(parsed);
+          threadRef.current = parsed;
+        } else if (!cancelled) {
+          const fresh = createThread(deps, context);
+          setThread(fresh);
+          threadRef.current = fresh;
+        }
+      } catch {
+        if (!cancelled) {
+          const fresh = createThread(deps, context);
+          setThread(fresh);
+          threadRef.current = fresh;
+        }
+      } finally {
+        if (!cancelled) setHydrated(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- init once on mount
+  }, [deps]);
+
+  useEffect(() => {
+    if (!hydrated || !thread) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(thread)).catch(() => {});
+  }, [thread, hydrated]);
+
+  const send = useCallback(
+    async (text: string) => {
+      const trimmed = text.trim();
+      if (!trimmed) return;
+
+      setLoading(true);
+      try {
+        const online = await deps.isOnline();
+        setNetworkOffline(!online);
+        if (online && apiBase.trim()) {
+          const status = await checkSarthiBffHealth(apiBase);
+          setBffStatus(status);
+        }
+
+        const base = threadRef.current ?? createThread(deps, context);
+        if (!threadRef.current) {
+          setThread(base);
+          threadRef.current = base;
+        }
+
+        const next = await sendMessage(base, trimmed, context, deps);
+        threadRef.current = next;
+        setThread(next);
+      } catch {
+        const base = threadRef.current ?? createThread(deps, context);
+        const fallback = await sendMessage(base, trimmed, context, {
+          ...deps,
+          isOnline: async () => false,
+        });
+        threadRef.current = fallback;
+        setThread(fallback);
+        setNetworkOffline(true);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [context, deps, apiBase, hydrated]
+  );
+
+  const clearThread = useCallback(() => {
+    const fresh = createThread(deps, context);
+    threadRef.current = fresh;
+    setThread(fresh);
+    AsyncStorage.removeItem(STORAGE_KEY).catch(() => {});
+  }, [deps, context]);
+
+  const refreshWelcomeIfNeeded = useCallback(() => {
+    setThread((t) => {
+      const current = t ?? threadRef.current ?? createThread(deps, context);
+      if (current.messages.length === 0) return createThread(deps, context);
+      const [first, ...rest] = current.messages;
+      if (first.role !== 'assistant') return current;
+      const welcome = createThread(deps, context).messages[0];
+      const updated = { ...current, messages: [welcome, ...rest] };
+      threadRef.current = updated;
+      return updated;
+    });
+  }, [deps, context]);
+
+  const displayThread = thread ?? createThread(deps, context);
+
+  return {
+    thread: displayThread,
+    loading,
+    offlineMode: networkOffline,
+    bffUnavailable,
+    bffStatus,
+    hydrated,
+    send,
+    clearThread,
+    context,
+    refreshWelcomeIfNeeded,
+  };
+}
